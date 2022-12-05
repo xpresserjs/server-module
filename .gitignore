@@ -1,0 +1,12 @@
+node_modules
+.idea
+.vscode
+dev
+build
+test.ts
+yarn.lock
+*.log
+
+# TS
+*.js
+*.d.ts
