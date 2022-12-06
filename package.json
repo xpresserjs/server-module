@@ -11,7 +11,8 @@
   "private": false,
   "scripts": {
     "watch": "npx tsc -w",
-    "dev": "nodemon dist/test.js server"
+    "dev": "nodemon dist/test.js server",
+    "prepublishOnly": "npx tsc"
   },
   "dependencies": {},
   "devDependencies": {
