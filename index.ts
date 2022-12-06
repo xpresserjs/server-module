@@ -1,7 +1,9 @@
 import BaseModule, {BaseModuleConfig} from "@xpresser/framework/modules/BaseModule.js";
 import {BootCycleFunction} from "@xpresser/framework/engines/BootCycleEngine.js";
 import type {Xpresser} from "@xpresser/framework/xpresser.js";
-import {ServerConfig, XpresserHttpServerProvider} from "./types/index.js";
+import type {ServerConfig} from "./types/index.js";
+import type {XpresserHttpServerProvider} from "./provider.js";
+
 
 /**
  * Add BootCycle types
@@ -27,6 +29,14 @@ declare module "@xpresser/framework/modules/BaseModule.js" {
     module Modules {
         enum Available {
             server = "ServerModule"
+        }
+    }
+}
+
+declare module "@xpresser/framework/types/configs.js" {
+    module Config {
+        interface Main {
+            server?: Partial<ServerConfig>;
         }
     }
 }
@@ -116,12 +126,6 @@ export async function RegisterServerModule($: Xpresser, provider: XpresserHttpSe
     console.log("ServerModule Registered");
 }
 
-declare module "@xpresser/framework/types/configs.js" {
-    module Config {
-        interface Main {
-            server?: Partial<ServerConfig>;
-        }
-    }
-}
+
 
 export default ServerModule;

@@ -109,6 +109,3 @@ export interface ServerConfig {
 }
 
 
-export declare class XpresserHttpServerProvider {
-    public initialize(): Promise<void>;
-}
