@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "description": "Xpresser v2 server module",
   "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
   "repository": "https://github.com/xpresserjs/server-module",
   "author": "xpresserjs",
   "license": "MIT",
@@ -13,6 +15,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@types/node": "^18.11.11",
     "@xpresser/framework": "^0.0.15",
     "nodemon": "^2.0.20",
     "ts-node": "^10.9.1",
