@@ -123,7 +123,6 @@ class ServerModule extends BaseModule implements BaseModule {
 
 export async function RegisterServerModule($: Xpresser, provider: XpresserHttpServerProvider) {
     await $.modules.register(ServerModule);
-    console.log("ServerModule Registered");
 }
 
 
