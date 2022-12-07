@@ -1,8 +1,8 @@
-import BaseModule, {BaseModuleConfig} from "@xpresser/framework/modules/BaseModule.js";
-import {BootCycleFunction} from "@xpresser/framework/engines/BootCycleEngine.js";
+import BaseModule, {type BaseModuleConfig} from "@xpresser/framework/modules/BaseModule.js";
+import {type BootCycle, BootCycleFunction} from "@xpresser/framework/engines/BootCycleEngine.js";
 import type {Xpresser} from "@xpresser/framework/xpresser.js";
 import type {ServerConfig} from "./types/index.js";
-import type {XpresserHttpServerProvider} from "./provider.js";
+import type {HttpServerProviderStructure} from "./provider.js";
 
 
 /**
@@ -12,11 +12,8 @@ import type {XpresserHttpServerProvider} from "./provider.js";
 declare module "@xpresser/framework/engines/BootCycleEngine.js" {
     module BootCycle {
         enum Cycles {
-            expressInit = "expressInit",
             serverInit = "serverInit",
             bootServer = "bootServer",
-            http = "http",
-            https = "https",
             serverBooted = "serverBooted"
         }
     }
@@ -55,24 +52,25 @@ class ServerModule extends BaseModule implements BaseModule {
 
     static customBootCycles(): string[] {
         return [
-            // list of boot cycles available on this module
             "serverInit",
-            "expressInit",
             "bootServer",
-            "http",
-            "https",
             "serverBooted"
         ];
     }
 
-    init() {
+    httpProvider!: HttpServerProviderStructure;
+
+    async init() {
         if (this.initialized) return;
+
+        // Log Server Start
+        await this.serverStartLog()
 
         // Add default config
         this.addDefaultConfig();
 
         // Run on started boot cycle
-        this.$.on.started(
+        this.$.on.boot(
             BootCycleFunction("___SERVER_MODULE___", async (next) => {
                 await this.boot();
                 return next();
@@ -83,7 +81,7 @@ class ServerModule extends BaseModule implements BaseModule {
         this.initialized = true;
     }
 
-    addDefaultConfig() {
+    private addDefaultConfig() {
         const defaultConfig: ServerConfig = {
             maintenanceMiddleware: "MaintenanceMiddleware.js",
             port: 2000,
@@ -110,21 +108,78 @@ class ServerModule extends BaseModule implements BaseModule {
 
         const customConfig = this.$.config.data.server;
         if (customConfig) {
-            this.$.config.setTyped("server", defaultConfig).merge(customConfig);
+            this.$.config.setTyped("server", defaultConfig).pathTyped("server").merge(customConfig);
         } else {
             this.$.config.setTyped("server", defaultConfig);
         }
     }
 
-    async boot() {
-        console.log(this.$.config.data.server);
+    private async boot() {
+        // get provider
+        const provider = this.httpProvider;
+        // initialize provider
+        await provider.init(this.$);
+
+        // Run serverInit boot cycle
+        await this.$.runBootCycle('serverInit');
+
+        // Run bootServer boot cycle
+        await this.$.runBootCycle('bootServer');
+
+        // boot server
+        await provider.boot(this.$);
+
+        // Run serverBooted boot cycle
+        await this.$.runBootCycle('serverBooted');
+    }
+
+    private async serverStartLog(){
+
+        // import lodash
+        const {default: {startCase}} = await import('lodash');
+        // import chalk
+        const {default: chalk} = await import('chalk');
+
+        const $ = this.$;
+
+        // Log Xpresser Version
+        const PackageDotJson = $.engineData.data.packageDotJson.data as any;
+        $.console.logCalmly(`${PackageDotJson.name} version ${PackageDotJson.version}`);
+
+        // Log Project Name
+        let {name, env} = $.config.data;
+        if (env) {
+            env = startCase(env);
+            env = env.toLowerCase() === "development" ? chalk.yellow(`(${env})`) : chalk.greenBright(`(${env})`);
+            env = chalk.yellow(env);
+        }
+
+
+        $.console.log(`${name} ${env}`.trim());
     }
 }
 
-export async function RegisterServerModule($: Xpresser, provider: XpresserHttpServerProvider) {
+export async function RegisterServerModule($: Xpresser, provider: HttpServerProviderStructure) {
     await $.modules.register(ServerModule);
-}
 
+    // check if provider has custom boot cycles
+    if (provider.customBootCycles) {
+        // register boot cycles
+        const customCycles = provider.customBootCycles();
+        if (customCycles.length) {
+            // if true, add custom cycles to boot cycles
+            $.addBootCycle(customCycles as BootCycle.Keys[]);
+        }
+    }
+
+    $.on.beforeStart(BootCycleFunction("SetServerModuleProvider", (next) => {
+        // get active module
+        const activeModule = $.modules.getActiveInstance<ServerModule>()
+        // set provider
+        activeModule.httpProvider = provider;
+        next()
+    }));
+}
 
 
 export default ServerModule;
