@@ -44,11 +44,12 @@ declare module "@xpresser/framework/types/configs.js" {
  */
 class ServerModule extends BaseModule implements BaseModule {
     static config: BaseModuleConfig = {
-        name: "Xpresser/ServerModule"
+        name: "Xpresser/ServerModule",
+
+        // ModulesEngine launch keyword
+        keyword: "server",
     }
 
-    // ModulesEngine launch keyword
-    static keyword: string = "server";
 
     static customBootCycles(): string[] {
         return [
