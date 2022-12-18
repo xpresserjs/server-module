@@ -138,7 +138,7 @@ class ServerModule extends BaseModule implements BaseModule {
     private async serverStartLog(){
 
         // import lodash
-        const {default: {startCase}} = await import('lodash');
+        const  {startCase} = await import('lodash-es');
         // import chalk
         const {default: chalk} = await import('chalk');
 
