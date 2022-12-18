@@ -64,8 +64,7 @@ class ServerModule extends BaseModule implements BaseModule {
     async init() {
         if (this.initialized) return;
 
-        // Log Server Start
-        await this.serverStartLog()
+
 
         // Add default config
         this.addDefaultConfig();
@@ -73,6 +72,8 @@ class ServerModule extends BaseModule implements BaseModule {
         // Run on started boot cycle
         this.$.on.boot(
             BootCycleFunction("___SERVER_MODULE___", async (next) => {
+                // Log Server Start
+                await this.serverStartLog()
                 await this.boot();
                 return next();
             })
@@ -142,10 +143,6 @@ class ServerModule extends BaseModule implements BaseModule {
         const {default: chalk} = await import('chalk');
 
         const $ = this.$;
-
-        // Log Xpresser Version
-        const PackageDotJson = $.engineData.data.packageDotJson.data as any;
-        $.console.logCalmly(`${PackageDotJson.name} version ${PackageDotJson.version}`);
 
         // Log Project Name
         let {name, env} = $.config.data;
