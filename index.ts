@@ -33,7 +33,7 @@ declare module "@xpresser/framework/modules/BaseModule.js" {
 declare module "@xpresser/framework/types/configs.js" {
     module Config {
         interface Main {
-            server?: Partial<ServerConfig>;
+            server: Partial<ServerConfig>;
         }
     }
 }
@@ -45,9 +45,8 @@ declare module "@xpresser/framework/types/configs.js" {
 class ServerModule extends BaseModule implements BaseModule {
     static config: BaseModuleConfig = {
         name: "Xpresser/ServerModule",
-
-        // ModulesEngine launch keyword
         keyword: "server",
+        description: "Xpresser Http Server Module"
     }
 
 

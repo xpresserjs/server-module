@@ -3,8 +3,16 @@
   "version": "0.0.4",
   "description": "Xpresser v2 server module",
   "type": "module",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    },
+    "./*": {
+      "import": "./*",
+      "types": "./*.d.ts"
+    }
+  },
   "repository": "https://github.com/xpresserjs/server-module",
   "author": "xpresserjs",
   "license": "MIT",

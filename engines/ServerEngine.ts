@@ -1,5 +1,5 @@
 import BaseEngine from "@xpresser/framework/engines/BaseEngine.js";
-import buildUrl from  "@googlicius/build-url";
+import buildUrl from "@googlicius/build-url";
 
 class ServerEngine extends BaseEngine {
     static config = {
@@ -13,12 +13,12 @@ class ServerEngine extends BaseEngine {
      */
     url($path: string = "", $query: any = {}) {
         let url: string;
-        const server: Record<string, any> = this.$.config.get('server');
+        const server = this.$.config.getTyped('server')!;
 
         if ($path.substring(0, 1) === "/")
             $path = $path.substring(1);
 
-        if (server.baseUrl.length) {
+        if (server.baseUrl && server.baseUrl.length) {
             url = server.baseUrl + $path;
         } else {
             let d = server.domain;
