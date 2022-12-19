@@ -1,6 +1,6 @@
 {
   "name": "@xpresser/server-module",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Xpresser v2 server module",
   "type": "module",
   "exports": {
