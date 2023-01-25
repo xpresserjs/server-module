@@ -33,7 +33,7 @@ declare module "@xpresser/framework/modules/BaseModule.js" {
 declare module "@xpresser/framework/types/configs.js" {
     module Config {
         interface Main {
-            server: Partial<ServerConfig>;
+            server: Partial<ServerConfig.Main>;
         }
     }
 }
@@ -64,7 +64,6 @@ class ServerModule extends BaseModule implements BaseModule {
         if (this.initialized) return;
 
 
-
         // Add default config
         this.addDefaultConfig();
 
@@ -82,8 +81,8 @@ class ServerModule extends BaseModule implements BaseModule {
         this.initialized = true;
     }
 
-    private addDefaultConfig() {
-        const defaultConfig: ServerConfig = {
+    defaultConfig(): ServerConfig.Main {
+        return {
             maintenanceMiddleware: "MaintenanceMiddleware.js",
             port: 2000,
             protocol: "http",
@@ -93,19 +92,29 @@ class ServerModule extends BaseModule implements BaseModule {
             baseUrl: "",
             poweredBy: true,
             servePublicFolder: true,
+            forceHttpToHttps: false,
 
             ssl: {
                 enabled: false,
-                port: 443
+                port: 443,
             },
 
             use: {
                 bodyParser: true,
-                flash: false
+                flash: false,
+                cors: false,
             },
 
-            router: {pathCase: "snake"}
+            router: {pathCase: "snake"},
+
+            configs: {
+                cors: undefined
+            }
         }
+    }
+
+    private addDefaultConfig() {
+        const defaultConfig: ServerConfig.Main = this.defaultConfig();
 
         const customConfig = this.$.config.data.server;
         if (customConfig) {
@@ -134,10 +143,10 @@ class ServerModule extends BaseModule implements BaseModule {
         await this.$.runBootCycle('serverBooted');
     }
 
-    private async serverStartLog(){
+    private async serverStartLog() {
 
         // import lodash
-        const  {startCase} = await import('lodash-es');
+        const {startCase} = await import('lodash-es');
         // import chalk
         const {default: chalk} = await import('chalk');
 
