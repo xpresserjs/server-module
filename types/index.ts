@@ -1,4 +1,8 @@
 declare module ServerConfig {
+    export  interface Configs {
+        cors?: any;
+    }
+
     export interface Main {
         /**
          * Server Name
@@ -127,9 +131,7 @@ declare module ServerConfig {
         };
 
 
-        configs: {
-            cors?: any;
-        }
+        configs: Configs
     }
 }
 
