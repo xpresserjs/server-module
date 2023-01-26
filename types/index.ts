@@ -1,8 +1,4 @@
 declare module ServerConfig {
-    export  interface Configs {
-        cors?: any;
-    }
-
     export interface Main {
         /**
          * Server Name
@@ -64,19 +60,7 @@ declare module ServerConfig {
         /**
          * SSL Configurations.
          */
-        ssl: {
-            /**
-             * Enable ssl
-             * default: false
-             */
-            enabled: boolean;
-
-            /**
-             * Ssl Port (if ssl is enabled)
-             * default: 443
-             */
-            port: number;
-        };
+        ssl: Ssl
 
         /**
          * Enable or disable PoweredBy
@@ -95,43 +79,64 @@ declare module ServerConfig {
          * You can enable or disable them here.
          * ['bodyParser', 'flash' 'helmet']
          */
-        use: {
-            /**
-             * Enable BodyParser support.
-             */
-            bodyParser: boolean;
+        use: Use;
 
-            /**
-             * Enable Flash support.
-             */
-            flash: boolean;
-
-
-            /**
-             * Enable cors support.
-             */
-            cors: boolean;
-
-        };
-
-        // requestEngine: {
-        //     dataKey: "data";
-        //     proceedKey: "proceed";
-        //     messageKey: "_say";
-        // };
 
         /**
          * Xpresser Router Config
          */
-        router: {
-            /**
-             * Route url path case
-             */
-            pathCase: "snake" | "kebab"; // snake or kebab
-        };
+        router: Router;
 
 
+        /**
+         * configs - This object holds the configs for all server module related packages.
+         * example: cors, helmet, etc
+         */
         configs: Configs
+    }
+
+    export interface Router {
+        /**
+         * Route url path case
+         */
+        pathCase: "snake" | "kebab"; // snake or kebab
+
+    }
+
+    export interface Configs {
+        cors?: any;
+    }
+
+    export interface Ssl {
+        /**
+         * Enable ssl
+         * default: false
+         */
+        enabled: boolean;
+
+        /**
+         * Ssl Port (if ssl is enabled)
+         * default: 443
+         */
+        port: number;
+    }
+
+    export interface Use {
+        /**
+         * Enable BodyParser support.
+         */
+        bodyParser: boolean;
+
+        /**
+         * Enable Flash support.
+         */
+        flash: boolean;
+
+
+        /**
+         * Enable cors support.
+         */
+        cors: boolean;
     }
 }
 
