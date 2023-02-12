@@ -39,8 +39,8 @@ declare module "@xpresser/framework/types/configs.js" {
 }
 
 /**
- * This module handles the console section of the application.
- * key: cli
+ * Server Module
+ * key: server
  */
 class ServerModule extends BaseModule implements BaseModule {
     static config: BaseModuleConfig = {
@@ -62,7 +62,6 @@ class ServerModule extends BaseModule implements BaseModule {
 
     async init() {
         if (this.initialized) return;
-
 
         // Add default config
         this.addDefaultConfig();

@@ -2,6 +2,7 @@
   "extends": "@xpresser/framework/tsconfig.json",
   "compilerOptions": {
     "outDir": "./",
+    "types": []
   },
   "exclude": [
     "node_modules",
