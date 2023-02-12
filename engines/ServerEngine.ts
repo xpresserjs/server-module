@@ -13,10 +13,9 @@ class ServerEngine extends BaseEngine {
      */
     url($path: string = "", $query: any = {}) {
         let url: string;
-        const server = this.$.config.getTyped('server')!;
+        const server = this.$.config.getTyped("server")!;
 
-        if ($path.substring(0, 1) === "/")
-            $path = $path.substring(1);
+        if ($path.substring(0, 1) === "/") $path = $path.substring(1);
 
         if (server.baseUrl && server.baseUrl.length) {
             url = server.baseUrl + $path;
@@ -24,7 +23,7 @@ class ServerEngine extends BaseEngine {
             let d = server.domain;
             let p = server.protocol;
 
-            if (server.includePortInUrl && (server.port !== 80 && server.port !== 443)) {
+            if (server.includePortInUrl && server.port !== 80 && server.port !== 443) {
                 d = d + ":" + server.port;
             }
 
@@ -38,13 +37,12 @@ class ServerEngine extends BaseEngine {
         if (Object.keys($query).length) {
             // @ts-ignore
             url = buildUrl(url, {
-                queryParams: $query,
+                queryParams: $query
             });
         }
 
         return url;
     }
-
 }
 
 export default ServerEngine;

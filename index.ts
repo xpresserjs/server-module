@@ -1,9 +1,8 @@
-import BaseModule, {type BaseModuleConfig} from "@xpresser/framework/modules/BaseModule.js";
-import {type BootCycle, BootCycleFunction} from "@xpresser/framework/engines/BootCycleEngine.js";
-import type {Xpresser} from "@xpresser/framework/xpresser.js";
-import type {ServerConfig} from "./types/index.js";
-import type {HttpServerProviderStructure} from "./provider.js";
-
+import BaseModule, { type BaseModuleConfig } from "@xpresser/framework/modules/BaseModule.js";
+import { type BootCycle, BootCycleFunction } from "@xpresser/framework/engines/BootCycleEngine.js";
+import type { Xpresser } from "@xpresser/framework/xpresser.js";
+import type { ServerConfig } from "./types/index.js";
+import type { HttpServerProviderStructure } from "./provider.js";
 
 /**
  * Add BootCycle types
@@ -47,31 +46,37 @@ class ServerModule extends BaseModule implements BaseModule {
         name: "Xpresser/ServerModule",
         keyword: "server",
         description: "Xpresser Http Server Module"
-    }
-
+    };
 
     static customBootCycles(): string[] {
-        return [
-            "serverInit",
-            "bootServer",
-            "serverBooted"
-        ];
+        return ["serverInit", "bootServer", "serverBooted"];
     }
 
+    /**
+     * Http Provider
+     * Holds The instance of the registered http provider.
+     */
     httpProvider!: HttpServerProviderStructure;
 
+    /**
+     * Initialize Server Module
+     * - Add default Configurations
+     * - Add `$.on.boot` Cycle Function to start server.
+     * - Set server module as initialized.
+     */
     async init() {
+        // if already initialized return.
         if (this.initialized) return;
 
         // Add default config
-        this.addDefaultConfig();
+        this.#addDefaultConfig();
 
         // Run on started boot cycle
         this.$.on.boot(
-            BootCycleFunction("___SERVER_MODULE___", async (next) => {
+            BootCycleFunction(ServerModule.prependName("Boot"), async (next) => {
                 // Log Server Start
-                await this.serverStartLog()
-                await this.boot();
+                await this.#serverStartLog();
+                await this.#boot();
                 return next();
             })
         );
@@ -80,6 +85,9 @@ class ServerModule extends BaseModule implements BaseModule {
         this.initialized = true;
     }
 
+    /**
+     * Default Server Configuration
+     */
     defaultConfig(): ServerConfig.Main {
         return {
             maintenanceMiddleware: "MaintenanceMiddleware.js",
@@ -95,24 +103,24 @@ class ServerModule extends BaseModule implements BaseModule {
 
             ssl: {
                 enabled: false,
-                port: 443,
+                port: 443
             },
 
             use: {
                 bodyParser: true,
                 flash: false,
-                cors: false,
+                cors: false
             },
 
-            router: {pathCase: "snake"},
+            router: { pathCase: "snake" },
 
             configs: {
                 cors: undefined
             }
-        }
+        };
     }
 
-    private addDefaultConfig() {
+    #addDefaultConfig() {
         const defaultConfig: ServerConfig.Main = this.defaultConfig();
 
         const customConfig = this.$.config.data.server;
@@ -123,68 +131,89 @@ class ServerModule extends BaseModule implements BaseModule {
         }
     }
 
-    private async boot() {
+    async #boot() {
         // get provider
         const provider = this.httpProvider;
         // initialize provider
         await provider.init(this.$);
 
         // Run serverInit boot cycle
-        await this.$.runBootCycle('serverInit');
+        await this.$.runBootCycle("serverInit");
 
         // Run bootServer boot cycle
-        await this.$.runBootCycle('bootServer');
+        await this.$.runBootCycle("bootServer");
 
         // boot server
         await provider.boot(this.$);
 
         // Run serverBooted boot cycle
-        await this.$.runBootCycle('serverBooted');
+        await this.$.runBootCycle("serverBooted");
     }
 
-    private async serverStartLog() {
-
+    async #serverStartLog() {
         // import lodash
-        const {startCase} = await import('lodash-es');
+        const { startCase } = await import("lodash-es");
         // import chalk
-        const {default: chalk} = await import('chalk');
+        const { default: chalk } = await import("chalk");
 
         const $ = this.$;
 
         // Log Project Name
-        let {name, env} = $.config.data;
+        let { name, env } = $.config.data;
         if (env) {
             env = startCase(env);
-            env = env.toLowerCase() === "development" ? chalk.yellow(`(${env})`) : chalk.greenBright(`(${env})`);
+            env =
+                env.toLowerCase() === "development"
+                    ? chalk.yellow(`(${env})`)
+                    : chalk.greenBright(`(${env})`);
             env = chalk.yellow(env);
         }
-
 
         $.console.log(`${name} ${env}`.trim());
     }
 }
 
+/**
+ * Register Server Module
+ * This function is called by the provider
+ * @param $
+ * @param provider
+ * @example
+ *
+ * const provider = new HttpServerProvider();
+ * await RegisterServerModule($, provider);
+ */
 export async function RegisterServerModule($: Xpresser, provider: HttpServerProviderStructure) {
-    await $.modules.register(ServerModule);
+    let customCycles: string[] = [];
 
     // check if provider has custom boot cycles
     if (provider.customBootCycles) {
-        // register boot cycles
-        const customCycles = provider.customBootCycles();
-        if (customCycles.length) {
-            // if true, add custom cycles to boot cycles
-            $.addBootCycle(customCycles as BootCycle.Keys[]);
-        }
+        customCycles = provider.customBootCycles();
     }
 
-    $.on.beforeStart(BootCycleFunction("SetServerModuleProvider", (next) => {
-        // get active module
-        const activeModule = $.modules.getActiveInstance<ServerModule>()
-        // set provider
-        activeModule.httpProvider = provider;
-        next()
-    }));
-}
+    // Register Module
+    await $.modules.register(ServerModule, {
+        // add provider custom boot cycles
+        addBootCycles: customCycles as BootCycle.Cycles[]
+    });
 
+    /**
+     * Set Server Module Provider
+     * This is done before server starts
+     * The httpProvider is set on the active module
+     */
+    $.on.beforeStart(
+        BootCycleFunction(ServerModule.prependName("SetServerModuleProvider"), (next) => {
+            // get active module
+            const activeModule = $.modules.getActiveInstance<ServerModule>();
+
+            // set provider
+            activeModule.httpProvider = provider;
+
+            // continue
+            next();
+        })
+    );
+}
 
 export default ServerModule;

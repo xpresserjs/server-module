@@ -60,7 +60,7 @@ declare module ServerConfig {
         /**
          * SSL Configurations.
          */
-        ssl: Ssl
+        ssl: Ssl;
 
         /**
          * Enable or disable PoweredBy
@@ -81,18 +81,16 @@ declare module ServerConfig {
          */
         use: Use;
 
-
         /**
          * Xpresser Router Config
          */
         router: Router;
 
-
         /**
          * configs - This object holds the configs for all server module related packages.
          * example: cors, helmet, etc
          */
-        configs: Configs
+        configs: Configs;
     }
 
     export interface Router {
@@ -100,7 +98,6 @@ declare module ServerConfig {
          * Route url path case
          */
         pathCase: "snake" | "kebab"; // snake or kebab
-
     }
 
     export interface Configs {
@@ -132,7 +129,6 @@ declare module ServerConfig {
          */
         flash: boolean;
 
-
         /**
          * Enable cors support.
          */
@@ -140,6 +136,4 @@ declare module ServerConfig {
     }
 }
 
-
-export type {ServerConfig};
-
+export type { ServerConfig };

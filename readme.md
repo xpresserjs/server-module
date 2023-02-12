@@ -11,8 +11,8 @@ npm install @xpresser/server-module
 ## Usage
 
 ```js
-import {RegisterServerModule} from "@xpresser/server-module";
+import { RegisterServerModule } from "@xpresser/server-module";
 import ExpressProvider from "@xpresser/express-server-module-provider";
 
-await RegisterServerModule($,  new ExpressProvider);
+await RegisterServerModule($, new ExpressProvider);
 ```
