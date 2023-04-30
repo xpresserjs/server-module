@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import BaseModule, { type BaseModuleConfig } from "@xpresser/framework/modules/BaseModule.js";
 import { type BootCycle, BootCycleFunction } from "@xpresser/framework/engines/BootCycleEngine.js";
 import type { Xpresser } from "@xpresser/framework/xpresser.js";
@@ -42,12 +44,18 @@ declare module "@xpresser/framework/types/configs.js" {
  * key: server
  */
 class ServerModule extends BaseModule implements BaseModule {
+    /**
+     * Configure Module
+     */
     static config: BaseModuleConfig = {
         name: "Xpresser/ServerModule",
         keyword: "server",
         description: "Xpresser Http Server Module"
     };
 
+    /**
+     * Custom Boot Cycles required by this module.
+     */
     static customBootCycles(): string[] {
         return ["serverInit", "bootServer", "serverBooted"];
     }
@@ -120,7 +128,12 @@ class ServerModule extends BaseModule implements BaseModule {
         };
     }
 
+    /**
+     * Adds default config to xpresser config.
+     * @private
+     */
     #addDefaultConfig() {
+        // Get default config
         const defaultConfig: ServerConfig.Main = this.defaultConfig();
 
         const customConfig = this.$.config.data.server;
