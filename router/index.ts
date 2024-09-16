@@ -1,10 +1,11 @@
-import { clone, kebabCase, merge, snakeCase } from "lodash";
+import { clone, kebabCase, merge, snakeCase } from "lodash-es";
 import RouterRoute from "./src/RouterRoute.js";
 import RouterPath from "./src/RouterPath.js";
 
-import type { ManyRoutes, RouteArray, StringOrFunction, StringOrRegExp } from "./src/types.js";
+import type { ManyRoutes, RouteArray, RouteHandlerFunction, StringOrRegExp } from "./src/types.js";
 
-class XpresserRouter {
+// noinspection JSUnusedGlobalSymbols
+class XpresserRouter<ReqFn extends Function = Function> {
     public namespace: string = "";
     public routes: (RouterRoute | RouterPath)[] = [];
     private readonly xpresserInstanceGetter: (() => any) | undefined;
@@ -57,7 +58,7 @@ class XpresserRouter {
      * @param {string} [action]
      * @returns {RouterRoute}
      */
-    public all(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public all(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("all", path, action);
     }
 
@@ -67,7 +68,7 @@ class XpresserRouter {
      * @param {string} [action]
      * @returns {RouterRoute}
      */
-    public any(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public any(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("all", path, action);
     }
 
@@ -77,7 +78,7 @@ class XpresserRouter {
      * @param {string} [action]
      * @returns {RouterRoute}
      */
-    public delete(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public delete(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("delete", path, action);
     }
 
@@ -92,10 +93,10 @@ class XpresserRouter {
     /**
      * XpresserRouter Get
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public get(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public get(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("get", path, action);
     }
 
@@ -110,120 +111,120 @@ class XpresserRouter {
     /**
      * XpresserRouter Checkout
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public checkout(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public checkout(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("checkout", path, action);
     }
 
     /**
      * XpresserRouter Copy
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public copy(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public copy(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("copy", path, action);
     }
 
     /**
      * XpresserRouter Head
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public head(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public head(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("head", path, action);
     }
 
     /**
      * XpresserRouter Lock
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public lock(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public lock(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("lock", path, action);
     }
 
     /**
      * XpresserRouter Merge
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public merge(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public merge(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("merge", path, action);
     }
 
     /**
      * XpresserRouter Mkactivity
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public mkactivity(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public mkactivity(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("mkactivity", path, action);
     }
 
     /**
      * XpresserRouter Mkcol
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public mkcol(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public mkcol(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("mkcol", path, action);
     }
 
     /**
      * XpresserRouter Move
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public move(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public move(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("move", path, action);
     }
 
     /**
      * XpresserRouter M-Search
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public mSearch(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public mSearch(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("m-search", path, action);
     }
 
     /**
      * XpresserRouter Notify
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public notify(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public notify(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("notify", path, action);
     }
 
     /**
      * XpresserRouter Options
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public options(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public options(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("options", path, action);
     }
 
     /**
      * XpresserRouter Patch
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public patch(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public patch(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("patch", path, action);
     }
 
@@ -238,10 +239,10 @@ class XpresserRouter {
     /**
      * XpresserRouter Purge
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public purge(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public purge(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("purge", path, action);
     }
 
@@ -251,7 +252,7 @@ class XpresserRouter {
      * @param {string} [action]
      * @returns {RouterRoute}
      */
-    public post(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public post(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("post", path, action);
     }
 
@@ -266,10 +267,10 @@ class XpresserRouter {
     /**
      * XpresserRouter Report
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public report(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public report(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("report", path, action);
     }
 
@@ -279,7 +280,7 @@ class XpresserRouter {
      * @param {string} [action]
      * @returns {RouterRoute}
      */
-    public put(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public put(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("put", path, action);
     }
 
@@ -294,50 +295,50 @@ class XpresserRouter {
     /**
      * XpresserRouter Search
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public search(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public search(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("search", path, action);
     }
 
     /**
      * XpresserRouter Subscribe
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public subscribe(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public subscribe(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("subscribe", path, action);
     }
 
     /**
      * XpresserRouter Trace
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public trace(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public trace(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("trace", path, action);
     }
 
     /**
      * XpresserRouter Unlock
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public unlock(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public unlock(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("unlock", path, action);
     }
 
     /**
      * XpresserRouter Get
      * @param {string} path
-     * @param {StringOrFunction} [action]
+     * @param {RouteHandlerFunction} [action]
      * @returns {RouterRoute}
      */
-    public unsubscribe(path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public unsubscribe(path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>): RouterRoute {
         return this.addRoute("unsubscribe", path, action);
     }
 
@@ -347,9 +348,8 @@ class XpresserRouter {
      * @param path
      * @param action
      * @private
-     * @return {RouterRoute}
      */
-    public addRoute(method: string, path: StringOrRegExp, action?: StringOrFunction): RouterRoute {
+    public addRoute(method: string, path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>) {
         if (typeof path === "string" && action === undefined) {
             if (path.slice(0, 1) === "=") {
                 action = path.slice(1);

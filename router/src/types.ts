@@ -2,7 +2,7 @@ export interface RouteData {
     method?: string;
     name?: string;
     path: StringOrRegExp;
-    controller?: string;
+    controller?: RouteHandlerFunction<Function>;
 }
 
 export interface RoutePathData {
@@ -15,9 +15,7 @@ export interface RoutePathData {
     useActionsAsName?: boolean;
 }
 
-export type StringOrRegExp = String | RegExp;
-
-export type RequestHandler = (xpresser?: any) => any;
-export type StringOrFunction = RequestHandler | string;
+export type StringOrRegExp = string | RegExp;
+export type RouteHandlerFunction<Fn extends Function> = Fn | string;
 export type RouteArray = [StringOrRegExp, (string | boolean)?, (string | boolean)?];
 export type ManyRoutes = string[] | RouteArray[] | (string | RouteArray)[];

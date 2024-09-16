@@ -19,18 +19,25 @@
   "private": false,
   "scripts": {
     "watch": "npx tsc -w",
-    "prepublishOnly": "npx tsc"
+    "prepublishOnly": "npx tsc",
+    "test": "node --loader ts-node/esm --enable-source-maps bin/test.ts",
+    "test:watch": "npx tsx watch bin/test.ts"
   },
   "dependencies": {
-    "@googlicius/build-url": "^1.0.11"
+    "@googlicius/build-url": "^1.0.11",
+    "moment": "^2.30.1"
   },
   "devDependencies": {
+    "@japa/api-client": "^2.0.3",
+    "@japa/assert": "^3.0.0",
+    "@japa/runner": "^3.1.4",
     "@types/lodash-es": "^4.17.10",
     "@types/node": "^20.8.10",
     "@xpresser/framework": "^0.0.34",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
+    "tsx": "^4.19.1",
     "typescript": "^5.2.2"
   }
 }
