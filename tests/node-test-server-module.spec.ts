@@ -1,15 +1,9 @@
 import type { Xpresser } from "@xpresser/framework/xpresser.js";
-import { HttpServerProvider, HttpServerProviderStructure, OnHttpListen } from "../provider.js";
 import "../index.js";
 import { test } from "@japa/runner";
 import { RegisterServerModule } from "../index.js";
-import XpresserRouter from "../router/index.js";
-import type { IncomingMessage, ServerResponse } from "node:http";
-
-/**
- * Node Server Request Function
- */
-type NodeServerReqFn = (req: IncomingMessage, res: ServerResponse) => void;
+import type { ServerResponse } from "node:http";
+import NodeHttpServerProvider from "../servers/NodeHttpServerProvider";
 
 /**
  * Respond with text
@@ -21,71 +15,9 @@ function respond(res: ServerResponse, text: string) {
     res.end(text);
 }
 
-/**
- * Add BootCycle types
- */
-// declare module "@xpresser/framework/engines/BootCycleEngine.js" {
-//     module BootCycle {
-//         enum Cycles {
-//             nodeServerInit = "nodeServerInit",
-//         }
-//     }
-// }
-
-class NodeServer extends HttpServerProvider implements HttpServerProviderStructure {
-    async init($: Xpresser) {
-        // set isProduction
-        this.isProduction = $.config.data.env === "production";
-    }
-
-    async boot($: Xpresser): Promise<void> {
-        // import createServer as createHttpServer
-        const { createServer: createHttpServer } = await import("http");
-        const router = this.getRouter();
-
-        // Preprocess routes into a map for faster lookup
-        const routeMap: Map<string, NodeServerReqFn> = new Map();
-        for (const route of router.routes) {
-            if (typeof route.data.controller === "function") {
-                routeMap.set(route.data.path as string, route.data.controller as NodeServerReqFn);
-            }
-        }
-
-        const server = createHttpServer((req, res) => {
-            const url = new URL(req.url!, `http://${req.headers.host}`);
-            const routeHandler = routeMap.get(url.pathname);
-
-            if (routeHandler) {
-                routeHandler(req, res);
-            } else {
-                res.writeHead(404, { "Content-Type": "text/plain" });
-                res.end("Not Found!");
-            }
-        });
-
-        // get port from config or use default 80
-        const port = $.config.getTyped("server.port", 80);
-
-        await new Promise<void>((resolve, reject) => {
-            server.listen(port, "127.0.0.1", () => {
-                OnHttpListen($, port);
-                resolve();
-            });
-            server.on("error", reject);
-        });
-    }
-
-    /**
-     * Define Router Getter to have types
-     */
-    getRouter<Router = XpresserRouter<NodeServerReqFn>>(): Router {
-        return super.getRouter() as Router;
-    }
-}
-
 test.group("Node Server Module", async (group) => {
     let $: Xpresser;
-    let nodeServer: NodeServer;
+    let nodeServer: NodeHttpServerProvider;
 
     group.setup(async () => {
         const { init, __dirname } = await import("@xpresser/framework");
@@ -107,7 +39,7 @@ test.group("Node Server Module", async (group) => {
         });
 
         // Register Node Server Module with Xpresser
-        nodeServer = new NodeServer();
+        nodeServer = new NodeHttpServerProvider();
     });
 
     test("Register Node Server Module", async ({ assert }) => {
