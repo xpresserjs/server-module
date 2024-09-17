@@ -53,6 +53,7 @@ class RouterRoute {
         const controller = this.data.controller;
 
         if (!controller) throw new Error("Method: " + controller + " not found!");
+        if (typeof controller !== "string") return this;
 
         let name;
         if (controller.indexOf("@") >= 0) {

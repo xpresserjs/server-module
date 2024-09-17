@@ -3,7 +3,7 @@ import "../index.js";
 import { test } from "@japa/runner";
 import { RegisterServerModule } from "../index.js";
 import type { ServerResponse } from "node:http";
-import NodeHttpServerProvider from "../servers/NodeHttpServerProvider";
+import NodeHttpServerProvider from "../servers/NodeHttpServerProvider.js";
 
 /**
  * Respond with text
@@ -42,16 +42,16 @@ test.group("Node Server Module", async (group) => {
         nodeServer = new NodeHttpServerProvider();
     });
 
-    test("Register Node Server Module", async ({ assert }) => {
+    test("Register Node Server Module", async () => {
         await RegisterServerModule($, nodeServer);
         $.modules.setDefault("server");
     });
 
-    test("Add Routes", async ({ assert }) => {
+    test("Add Routes", async () => {
         const router = nodeServer.getRouter();
 
         router.get("/", (_req, res) => {
-            respond(res, "Hello World!!");
+            respond(res, "Hello World!");
         });
 
         router.get("/about", (_req, res) => {
@@ -59,7 +59,7 @@ test.group("Node Server Module", async (group) => {
         });
     });
 
-    test("Start Xpresser", async ({ assert }) => {
+    test("Start Xpresser", async () => {
         // Start Xpresser
         const routesLength = nodeServer.getRouter().routes.length;
         $.console.logInfo(`Using ${routesLength} routes.`);
