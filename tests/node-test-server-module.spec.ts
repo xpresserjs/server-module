@@ -30,7 +30,7 @@ test.group("Node Server Module", async (group) => {
             env: "development",
             name: "Node Server",
             debug: {
-                enabled: false,
+                enabled: true,
                 bootCycle: { started: true, completed: true },
                 bootCycleFunction: { started: true, completed: true }
             },
@@ -61,8 +61,11 @@ test.group("Node Server Module", async (group) => {
 
     test("Start Xpresser", async () => {
         // Start Xpresser
-        const routesLength = nodeServer.getRouter().routes.length;
-        $.console.logInfo(`Using ${routesLength} routes.`);
+        $.onNext("serverBooted", function LogRouteInfo() {
+            const routesLength = nodeServer.getRouter().routes.length;
+            $.console.logInfo(`Using ${routesLength} routes.`);
+        });
+
         await $.start();
     });
 });
