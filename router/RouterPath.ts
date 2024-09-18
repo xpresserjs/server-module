@@ -10,12 +10,9 @@ class RouterPath {
      * @param {StringOrRegExp} path
      * @param {string} routes
      * @param {string} [namespace]
-     * @returns {RouterPath}
      */
-    constructor(method: string, path: StringOrRegExp, routes: any, namespace: string = "") {
-        this.data = {
-            path
-        };
+    constructor(path: StringOrRegExp, routes: any, namespace: string = "") {
+        this.data = { path };
 
         if (routes) {
             this.data.children = <RoutePathData[]>routes;

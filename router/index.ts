@@ -1,8 +1,8 @@
 import { clone, kebabCase, merge, snakeCase } from "lodash-es";
-import RouterRoute from "./src/RouterRoute.js";
-import RouterPath from "./src/RouterPath.js";
+import RouterRoute from "./RouterRoute.js";
+import RouterPath from "./RouterPath.js";
 
-import type { ManyRoutes, RouteArray, RouteHandlerFunction, StringOrRegExp } from "./src/types.js";
+import type { ManyRoutes, RouteArray, RouteHandlerFunction, StringOrRegExp } from "./types.js";
 
 // noinspection JSUnusedGlobalSymbols
 class XpresserRouter<ReqFn extends Function = Function> {
@@ -46,7 +46,7 @@ class XpresserRouter<ReqFn extends Function = Function> {
             this.routes = oldRoutes;
         }
 
-        const eachRoute = new RouterPath("children", path, thisRoutes, this.namespace);
+        const eachRoute = new RouterPath(path, thisRoutes, this.namespace);
         this.routes.push(eachRoute);
 
         return eachRoute;
@@ -426,6 +426,13 @@ class XpresserRouter<ReqFn extends Function = Function> {
     public useController(controller: string, routes: (router: this) => void): RouterPath {
         return this.path("", routes).controller(controller);
     }
+
+    /**
+     * =================================================================================================================
+     * =========================================== STATIC METHODS =====================================================
+     * =================================================================================================================
+     */
+    static toJson() {}
 }
 
 export default XpresserRouter;

@@ -65,7 +65,6 @@ test.group("Node Server Module", async (group) => {
             const routesLength = nodeServer.getRouter().routes.length;
             $.console.logInfo(`Using ${routesLength} routes.`);
         });
-
         await $.start();
     });
 });
