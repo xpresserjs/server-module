@@ -59,6 +59,8 @@ class RouterService {
                 arr.push(route.data);
             }
         }
+
+        console.log("Routes: ", arr);
         return arr;
     }
 
@@ -70,30 +72,29 @@ class RouterService {
         if (!route.data.children) return arr;
 
         for (const path of route.data.children) {
+            // Parse each route
+            // add parent path to child path
+            let parentPath = route.data.path;
+            let thisPath = path.data.path;
+
+            if (parentPath instanceof RegExp) parentPath = parentPath.source;
+            if (thisPath instanceof RegExp) thisPath = thisPath.source;
+
+            // if thisPath is "/" then remove it
+            if (thisPath === "/") thisPath = "";
+            // add slash to this path if it doesn't have it
+            if (thisPath.length && thisPath[0] !== "/") thisPath = "/" + thisPath;
+
+            path.data.path = parentPath + thisPath;
+
             if (path instanceof RouterPath) {
                 arr.push(...this.#parsePaths(path));
-            } else {
-                // Parse each route
-                // add parent path to child path
-                let parentPath = route.data.path;
-                let thisPath = path.data.path;
-
-                if (parentPath instanceof RegExp) parentPath = parentPath.source;
-                if (thisPath instanceof RegExp) thisPath = thisPath.source;
-
-                console.log("Parent Path: ", parentPath);
-                console.log("This Path: ", thisPath);
-
-                // if thisPath is "/" then remove it
-                if (thisPath === "/") thisPath = "";
-                // add slash to this path if it doesn't have it
-                if (thisPath.length && thisPath[0] !== "/") thisPath = "/" + thisPath;
-
-                path.data.path = parentPath + thisPath;
-
-                arr.push(path.data);
+                continue;
             }
+
+            arr.push(path.data);
         }
+
         return arr;
     }
 }

@@ -20,6 +20,16 @@ test.group("RouterService", (group) => {
         router.path("/api", () => {
             router.get("/", NamedFunc("Api Index", demoHandler));
             router.get("/users", NamedFunc("Api Users", demoHandler));
+
+            router.path("/:user", () => {
+                router.get("", NamedFunc("User Index", demoHandler));
+                router.post("", NamedFunc("User Profile", demoHandler));
+
+                router.path("/posts", () => {
+                    router.get("", NamedFunc("User Posts", demoHandler));
+                    router.post("", NamedFunc("User Create Post", demoHandler));
+                });
+            });
         });
     });
 
@@ -31,8 +41,9 @@ test.group("RouterService", (group) => {
     });
 
     test("toObject()", () => {
-        const json = routerService.toObject();
-        console.log(json);
+        // const json = routerService.toObject();
+        // console.log(json);
+        routerService.toObject();
         // assert.deepEqual(json, [
         //     { method: "GET", path: "/", controller: demoHandler },
         //     { method: "GET", path: "/about", controller: demoHandler },
