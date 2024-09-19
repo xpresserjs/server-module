@@ -1,13 +1,18 @@
 import { clone, kebabCase, merge, snakeCase } from "lodash-es";
 import RouterRoute from "./RouterRoute.js";
 import RouterPath from "./RouterPath.js";
-
-import type { ManyRoutes, RouteArray, RouteHandlerFunction, StringOrRegExp } from "./types.js";
+import type {
+    ManyRoutes,
+    RouteArray,
+    RouteHandlerFunction,
+    StringOrRegExp,
+    Routes
+} from "./types.js";
 
 // noinspection JSUnusedGlobalSymbols
 class XpresserRouter<ReqFn extends Function = Function> {
     public namespace: string = "";
-    public routes: (RouterRoute | RouterPath)[] = [];
+    public routes: Routes = [];
     private readonly xpresserInstanceGetter: (() => any) | undefined;
     public readonly config = { pathCase: "snake" } as { pathCase: "snake" | "kebab" };
 
@@ -32,20 +37,25 @@ class XpresserRouter<ReqFn extends Function = Function> {
      * @returns {RouterPath}
      */
     public path(path: StringOrRegExp, routes?: (router: this) => void): RouterPath {
-        let thisRoutes = undefined;
+        let thisRoutes: Routes = [];
 
         if (typeof routes === "function") {
             let oldRoutes = clone(this.routes);
 
+            // reset routes
             this.routes = [];
 
+            // run routes function to get all routes
             routes(this);
 
+            // set new routes to thisRoutes
             thisRoutes = clone(this.routes);
 
+            // reset routes to old routes
             this.routes = oldRoutes;
         }
 
+        // Add new route to routes
         const eachRoute = new RouterPath(path, thisRoutes, this.namespace);
         this.routes.push(eachRoute);
 
@@ -350,6 +360,9 @@ class XpresserRouter<ReqFn extends Function = Function> {
      * @private
      */
     public addRoute(method: string, path: StringOrRegExp, action?: RouteHandlerFunction<ReqFn>) {
+        // convert method to uppercase
+        method = method.toUpperCase();
+
         if (typeof path === "string" && action === undefined) {
             if (path.slice(0, 1) === "=") {
                 action = path.slice(1);

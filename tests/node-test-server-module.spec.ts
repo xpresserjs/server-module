@@ -31,11 +31,16 @@ test.group("Node Server Module", async (group) => {
             name: "Node Server",
             debug: {
                 enabled: true,
-                bootCycle: { started: true, completed: true },
-                bootCycleFunction: { started: true, completed: true }
+                bootCycle: { started: false, completed: false },
+                bootCycleFunction: { started: false, completed: false }
             },
             paths: { base },
             log: { asciiArt: false }
+        });
+
+        $.onNext("stopped", function LogOnStop() {
+            // Log Calmly
+            $.console.logInfo(`<----- ${$.config.data.name} stopped. ----->`);
         });
 
         // Register Node Server Module with Xpresser
@@ -65,6 +70,11 @@ test.group("Node Server Module", async (group) => {
             const routesLength = nodeServer.getRouter().routes.length;
             $.console.logInfo(`Using ${routesLength} routes.`);
         });
+
         await $.start();
+    });
+
+    test("Stop Xpresser", async () => {
+        await $.stop();
     });
 });

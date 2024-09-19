@@ -1,3 +1,8 @@
+import type RouterRoute from "./RouterRoute.js";
+import type RouterPath from "./RouterPath.js";
+
+export type Routes = Array<RouterRoute | RouterPath>;
+
 export interface RouteData {
     method?: string;
     name?: string;
@@ -11,7 +16,7 @@ export interface RoutePathData {
     controller?: string;
     middleware?: string | string[];
     as?: string;
-    children?: RoutePathData[];
+    children?: Routes;
     useActionsAsName?: boolean;
 }
 

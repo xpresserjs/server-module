@@ -15,7 +15,8 @@ declare module "@xpresser/framework/engines/BootCycleEngine.js" {
         enum Cycles {
             serverInit = "serverInit",
             bootServer = "bootServer",
-            serverBooted = "serverBooted"
+            serverBooted = "serverBooted",
+            stopServer = "stopServer"
         }
     }
 }
@@ -57,7 +58,7 @@ class ServerModule extends BaseModule implements BaseModule {
      * Custom Boot Cycles required by this module.
      */
     static customBootCycles(): string[] {
-        return ["serverInit", "bootServer", "serverBooted"];
+        return ["serverInit", "bootServer", "serverBooted", "stopServer"];
     }
 
     /**

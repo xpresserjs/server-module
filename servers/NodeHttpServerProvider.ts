@@ -69,6 +69,19 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
             });
             server.on("error", reject);
         });
+
+        $.on.stop(function (next) {
+            server.close((err) => {
+                if (err) {
+                    $.console.logError("Error closing server");
+                    $.console.logError(err);
+                } else {
+                    $.console.logSuccess("Server closed successfully");
+                }
+
+                next();
+            });
+        });
     }
 
     /**

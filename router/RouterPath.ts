@@ -1,4 +1,4 @@
-import type { RoutePathData, StringOrRegExp } from "./types.js";
+import type { RoutePathData, StringOrRegExp, Routes } from "./types.js";
 
 class RouterPath {
     public data: RoutePathData;
@@ -11,11 +11,11 @@ class RouterPath {
      * @param {string} routes
      * @param {string} [namespace]
      */
-    constructor(path: StringOrRegExp, routes: any, namespace: string = "") {
+    constructor(path: StringOrRegExp, routes: Routes, namespace: string = "") {
         this.data = { path };
 
         if (routes) {
-            this.data.children = <RoutePathData[]>routes;
+            this.data.children = routes;
         } else {
             this.data.children = [];
         }
@@ -79,6 +79,13 @@ class RouterPath {
     actionsAsName(): this {
         this.data["useActionsAsName"] = true;
         return this;
+    }
+
+    /**
+     * To JSON
+     */
+    toJSON() {
+        return this.data;
     }
 }
 

@@ -18,6 +18,11 @@ class RouterRoute {
             controller: <string>controller
         };
 
+        if (typeof controller === "object") {
+            // set name
+            this.data.controller = controller.name;
+        }
+
         this.namespace = namespace;
     }
 
@@ -65,6 +70,13 @@ class RouterRoute {
         this.name(name);
 
         return this;
+    }
+
+    /**
+     * To JSON
+     */
+    toJSON() {
+        return this.data;
     }
 }
 

@@ -1,7 +1,7 @@
 {
   "extends": "./node_modules/@xpresser/framework/tsconfig.json",
   "compilerOptions": {
-    "outDir": "./",
+    "outDir": "./build",
     "types": [
       "@japa/runner",
       "@japa/assert",
@@ -9,5 +9,7 @@
   },
   "exclude": [
     "./node_modules",
+    "./bin",
+    "./build",
   ],
 }
