@@ -2,6 +2,7 @@ import { Xpresser } from "@xpresser/framework/xpresser.js";
 import { HttpServerProvider, HttpServerProviderStructure, OnHttpListen } from "../provider.js";
 import XpresserRouter from "../router/index.js";
 import { IncomingMessage, ServerResponse } from "node:http";
+import RouterService from "../router/RouterService.js";
 
 /**
  *  ReqHandlerFunction - Request Handler Function
@@ -33,15 +34,16 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
 
         // get router from provider
         const router = this.getRouter();
+        const routerService = new RouterService(router);
+        const routes = routerService.toArray();
+
+        $.console.logInfo(`Using ${routes.length} routes.`);
 
         // Preprocess routes into a map for faster lookup
         const routeMap: Map<string, ReqHandlerFunction> = new Map();
-        for (const route of router.routes) {
-            if (typeof route.data.controller === "function") {
-                routeMap.set(
-                    route.data.path as string,
-                    route.data.controller as ReqHandlerFunction
-                );
+        for (const route of routes) {
+            if (typeof route.controller === "function") {
+                routeMap.set(route.path as string, route.controller as ReqHandlerFunction);
             }
         }
 

@@ -27,7 +27,7 @@ class RouterService {
      * Convert router routes to JSON
      */
     toJson() {
-        return JSON.stringify(this.toObject());
+        return JSON.stringify(this.toArray());
     }
 
     /**
@@ -39,9 +39,9 @@ class RouterService {
     }
 
     /**
-     * Convert router routes to plain object
+     * Convert router routes to plain array
      */
-    toObject(): RouteData[] {
+    toArray(): RouteData[] {
         return this.parseRoutes();
     }
 
@@ -59,22 +59,20 @@ class RouterService {
                 arr.push(route.data);
             }
         }
-
-        console.log("Routes: ", arr);
         return arr;
     }
 
     /**
      * Parse Paths
      */
-    #parsePaths(route: RouterPath) {
+    #parsePaths(route: RouterPath, prevParentPath?: string): RouteData[] {
         const arr = [] as RouteData[];
         if (!route.data.children) return arr;
 
         for (const path of route.data.children) {
             // Parse each route
-            // add parent path to child path
-            let parentPath = route.data.path;
+            // add the parent path to child path
+            let parentPath = prevParentPath ?? route.data.path;
             let thisPath = path.data.path;
 
             if (parentPath instanceof RegExp) parentPath = parentPath.source;
@@ -85,14 +83,26 @@ class RouterService {
             // add slash to this path if it doesn't have it
             if (thisPath.length && thisPath[0] !== "/") thisPath = "/" + thisPath;
 
-            path.data.path = parentPath + thisPath;
+            const newPath = parentPath + thisPath;
+
+            // console.log({
+            //     parentPath: route.data.path,
+            //     thisPath: path.data.path,
+            //     newParentPath: parentPath,
+            //     newThisPath: thisPath,
+            //     prevParentPath,
+            //     value: newPath
+            // });
 
             if (path instanceof RouterPath) {
-                arr.push(...this.#parsePaths(path));
+                arr.push(...this.#parsePaths(path, newPath));
                 continue;
             }
 
-            arr.push(path.data);
+            arr.push({
+                ...path.data,
+                path: newPath
+            });
         }
 
         return arr;

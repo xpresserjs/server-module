@@ -1,36 +1,58 @@
 import { test } from "@japa/runner";
 import Router from "../router/index.js";
 import { IncomingMessage, ServerResponse } from "node:http";
-import { NamedFunc } from "@xpresser/framework/functions/utils.js";
 import RouterService from "../router/RouterService.js";
+import { SetupXpresser } from "./src/functions.js";
+import { RegisterServerModule } from "../index.js";
+import { NamedFunc } from "../../xpresser-framework/functions/utils.js";
 
-const demoHandler = (_req: IncomingMessage, res: ServerResponse) => {
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end(`The current route is: ${_req.url}`);
-};
+/**
+ * Make Handler
+ * @param name
+ */
+function makeHandler(name: string) {
+    return NamedFunc(name, function (req: IncomingMessage, res: ServerResponse) {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end(
+            JSON.stringify({
+                name,
+                url: req.url
+            })
+        );
+    });
+}
 
 test.group("RouterService", (group) => {
     let router = new Router();
     const routerService = new RouterService(router);
 
-    group.setup(() => {
-        router.get("/", NamedFunc("Index", demoHandler));
-        router.get("/about", NamedFunc("About", demoHandler));
+    group.setup(async () => {
+        router.get("/", makeHandler("Index"));
+        router.get("/about", makeHandler("About"));
 
         router.path("/api", () => {
-            router.get("/", NamedFunc("Api Index", demoHandler));
-            router.get("/users", NamedFunc("Api Users", demoHandler));
+            router.get("/", makeHandler("Api Index"));
+            router.get("/users", makeHandler("Api Users"));
 
-            router.path("/:user", () => {
-                router.get("", NamedFunc("User Index", demoHandler));
-                router.post("", NamedFunc("User Profile", demoHandler));
+            router.path("/user/:user", () => {
+                router.get("", makeHandler("User Index"));
+                router.post("", makeHandler("User Profile"));
 
                 router.path("/posts", () => {
-                    router.get("", NamedFunc("User Posts", demoHandler));
-                    router.post("", NamedFunc("User Create Post", demoHandler));
+                    router.get("", makeHandler("User Posts"));
+                    router.post("", makeHandler("User Create Post"));
                 });
             });
         });
+
+        const { $, nodeServer } = await SetupXpresser();
+        await RegisterServerModule($, nodeServer);
+        $.modules.setDefault("server");
+
+        // Set Router
+        nodeServer.setRouter(router);
+
+        await $.start();
     });
 
     test("Should add routes to router", ({ assert }) => {
@@ -40,10 +62,10 @@ test.group("RouterService", (group) => {
         assert.equal(router.routes.length, 3);
     });
 
-    test("toObject()", () => {
-        // const json = routerService.toObject();
-        // console.log(json);
-        routerService.toObject();
+    test("toArray()", () => {
+        const json = routerService.toArray();
+        console.log(json);
+        // routerService.toArray();
         // assert.deepEqual(json, [
         //     { method: "GET", path: "/", controller: demoHandler },
         //     { method: "GET", path: "/about", controller: demoHandler },

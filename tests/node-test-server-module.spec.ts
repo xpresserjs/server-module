@@ -4,6 +4,7 @@ import { test } from "@japa/runner";
 import { RegisterServerModule } from "../index.js";
 import type { ServerResponse } from "node:http";
 import NodeHttpServerProvider from "../servers/NodeHttpServerProvider.js";
+import { SetupXpresser } from "./src/functions.js";
 
 /**
  * Respond with text
@@ -15,36 +16,14 @@ function respond(res: ServerResponse, text: string) {
     res.end(text);
 }
 
-test.group("Node Server Module", async (group) => {
+test.group("Node Server Module", (group) => {
     let $: Xpresser;
     let nodeServer: NodeHttpServerProvider;
 
     group.setup(async () => {
-        const { init, __dirname } = await import("@xpresser/framework");
-
-        // Get Base Folder Path
-        const base = __dirname(import.meta.url);
-
-        // Init Xpresser
-        $ = await init({
-            env: "development",
-            name: "Node Server",
-            debug: {
-                enabled: true,
-                bootCycle: { started: false, completed: false },
-                bootCycleFunction: { started: false, completed: false }
-            },
-            paths: { base },
-            log: { asciiArt: false }
-        });
-
-        $.onNext("stopped", function LogOnStop() {
-            // Log Calmly
-            $.console.logInfo(`<----- ${$.config.data.name} stopped. ----->`);
-        });
-
-        // Register Node Server Module with Xpresser
-        nodeServer = new NodeHttpServerProvider();
+        const setup = await SetupXpresser();
+        $ = setup.$;
+        nodeServer = setup.nodeServer;
     });
 
     test("Register Node Server Module", async () => {
