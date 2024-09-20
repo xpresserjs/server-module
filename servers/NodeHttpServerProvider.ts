@@ -4,6 +4,9 @@ import XpresserRouter from "../router/index.js";
 import { IncomingMessage, ServerResponse, createServer as createHttpServer } from "node:http";
 import RouterService from "../router/RouterService.js";
 
+// Pre-defined 404 response to avoid constructing the same response on every request
+const notFoundResponse = Buffer.from("Not Found!");
+
 /**
  *  ReqHandlerFunction - Request Handler Function
  *  This is the type of function used in routes
@@ -15,12 +18,13 @@ export type ReqHandlerFunction = (req: IncomingMessage, res: ServerResponse) => 
  * An example of a custom http server provider for xpresser server module
  */
 class NodeHttpServerProvider extends HttpServerProvider implements HttpServerProviderStructure {
+    private routes: Map<string, ReqHandlerFunction> | null = null;
+
     /**
      * init - Initialize Server Provider
      * @param $
      */
     async init($: Xpresser) {
-        // set isProduction
         this.isProduction = $.config.data.env === "production";
     }
 
@@ -29,40 +33,29 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * @param $
      */
     async boot($: Xpresser): Promise<void> {
-        // get router from provider
         const router = this.getRouter();
         const routerService = RouterService.use(router);
-        const routes = routerService.toControllerMap<ReqHandlerFunction>();
+        this.routes = routerService.toControllerMap<ReqHandlerFunction>();
 
-        $.console.logInfo(`Using ${routes.size} routes.`);
+        $.console.logInfo(`Using ${this.routes.size} routes.`);
 
-        // Create server
-        const server = createHttpServer((req, res) => {
-            const url = new URL(req.url!, `http://${req.headers.host}`);
-            const method = (req.method ?? "GET")!.toUpperCase();
-            const handler = routes.get(`${method} ${url.pathname}`);
+        const server = createHttpServer(this.requestListener.bind(this));
 
-            if (handler) {
-                handler(req, res);
-            } else {
-                res.writeHead(404, { "Content-Type": "text/plain" });
-                res.end("Not Found!");
-            }
-        });
-
-        // get port from config or use default 80
         const port = $.config.getTyped("server.port", 80);
 
-        // Start server
         await new Promise<void>((resolve, reject) => {
             server.listen(port, "127.0.0.1", () => {
                 OnHttpListen($, port);
                 resolve();
             });
-            server.on("error", reject);
+
+            server.on("error", (err) => {
+                $.console.logError(`Server Error: ${err.message}`);
+                reject(err);
+            });
         });
 
-        $.on.stop(function (next) {
+        $.on.stop((next) => {
             server.close((err) => {
                 if (err) {
                     $.console.logError("Error closing server");
@@ -70,10 +63,38 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
                 } else {
                     $.console.logSuccess("Server closed successfully");
                 }
-
                 next();
             });
         });
+    }
+
+    /**
+     * Request Listener
+     * Handles incoming requests
+     * @param req
+     * @param res
+     */
+    private requestListener(req: IncomingMessage, res: ServerResponse): void {
+        const method = req.method?.toUpperCase() ?? "GET";
+        const url = req.url ?? "/";
+
+        const routeKey = `${method} ${url}`;
+        const handler = this.routes!.get(routeKey);
+
+        if (handler) {
+            handler(req, res);
+        } else {
+            this.sendNotFound(res);
+        }
+    }
+
+    /**
+     * Send a 404 response
+     * @param res
+     */
+    private sendNotFound(res: ServerResponse): void {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        res.end(notFoundResponse);
     }
 
     /**
