@@ -1,7 +1,7 @@
 import { Xpresser } from "@xpresser/framework/xpresser.js";
 import { HttpServerProvider, HttpServerProviderStructure, OnHttpListen } from "../provider.js";
 import XpresserRouter from "../router/index.js";
-import { IncomingMessage, ServerResponse } from "node:http";
+import { IncomingMessage, ServerResponse, createServer as createHttpServer } from "node:http";
 import RouterService from "../router/RouterService.js";
 
 /**
@@ -29,31 +29,21 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * @param $
      */
     async boot($: Xpresser): Promise<void> {
-        // import createServer as createHttpServer
-        const { createServer: createHttpServer } = await import("http");
-
         // get router from provider
         const router = this.getRouter();
-        const routerService = new RouterService(router);
-        const routes = routerService.toArray();
+        const routerService = RouterService.use(router);
+        const routes = routerService.toControllerMap<ReqHandlerFunction>();
 
-        $.console.logInfo(`Using ${routes.length} routes.`);
-
-        // Preprocess routes into a map for faster lookup
-        const routeMap: Map<string, ReqHandlerFunction> = new Map();
-        for (const route of routes) {
-            if (typeof route.controller === "function") {
-                routeMap.set(route.path as string, route.controller as ReqHandlerFunction);
-            }
-        }
+        $.console.logInfo(`Using ${routes.size} routes.`);
 
         // Create server
         const server = createHttpServer((req, res) => {
             const url = new URL(req.url!, `http://${req.headers.host}`);
-            const routeHandler = routeMap.get(url.pathname);
+            const method = (req.method ?? "GET")!.toUpperCase();
+            const handler = routes.get(`${method} ${url.pathname}`);
 
-            if (routeHandler) {
-                routeHandler(req, res);
+            if (handler) {
+                handler(req, res);
             } else {
                 res.writeHead(404, { "Content-Type": "text/plain" });
                 res.end("Not Found!");

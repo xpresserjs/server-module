@@ -22,25 +22,36 @@ function makeHandler(name: string) {
     });
 }
 
+const handlers = {
+    index: makeHandler("Index"),
+    about: makeHandler("About"),
+    api_index: makeHandler("Api Index"),
+    api_users: makeHandler("Api Users"),
+    api_user_index: makeHandler("User Index"),
+    api_user_profile: makeHandler("User Profile"),
+    api_user_posts_index: makeHandler("User Posts"),
+    api_user_posts_create: makeHandler("User Create Post")
+};
+
 test.group("RouterService", (group) => {
     let router = new Router();
     const routerService = new RouterService(router);
 
     group.setup(async () => {
-        router.get("/", makeHandler("Index"));
-        router.get("/about", makeHandler("About"));
+        router.get("/", handlers.index);
+        router.get("/about", handlers.about);
 
         router.path("/api", () => {
-            router.get("/", makeHandler("Api Index"));
-            router.get("/users", makeHandler("Api Users"));
+            router.get("/", handlers.api_index);
+            router.get("/users", handlers.api_users);
 
             router.path("/user/:user", () => {
-                router.get("", makeHandler("User Index"));
-                router.post("", makeHandler("User Profile"));
+                router.get("", handlers.api_user_index);
+                router.post("", handlers.api_user_profile);
 
                 router.path("/posts", () => {
-                    router.get("", makeHandler("User Posts"));
-                    router.post("", makeHandler("User Create Post"));
+                    router.get("", handlers.api_user_posts_index);
+                    router.post("", handlers.api_user_posts_create);
                 });
             });
         });

@@ -24,6 +24,14 @@ class RouterService {
     }
 
     /**
+     * Use Router.
+     * Same as constructor but for syntax sugar and easy chaining.
+     */
+    static use(router: Router) {
+        return new RouterService(router);
+    }
+
+    /**
      * Convert router routes to JSON
      */
     toJson() {
@@ -39,10 +47,51 @@ class RouterService {
     }
 
     /**
-     * Convert router routes to plain array
+     * Convert routes to plain array
      */
     toArray(): RouteData[] {
         return this.parseRoutes();
+    }
+
+    /**
+     * Convert routes to Map
+     */
+    toMap() {
+        const map = new Map<string, RouteData>();
+        for (const route of this.toArray()) {
+            let path = route.path;
+
+            // if path is a regex, convert to string
+            if (path instanceof RegExp) path = path.source;
+
+            // add method to path
+            // this is to make sure that the path is unique
+            path = route.method + " " + path;
+            map.set(path, route);
+        }
+
+        return map;
+    }
+
+    /**
+     * Convert routes to Map of path and controller
+     * This is useful to get a fast lookup of routes
+     */
+    toControllerMap<Controller = any>() {
+        const map = new Map<string, Controller>();
+        for (const route of this.toArray()) {
+            let path = route.path;
+
+            // if path is a regex, convert to string
+            if (path instanceof RegExp) path = path.source;
+
+            // add method to path
+            // this is to make sure that the path is unique
+            path = route.method + " " + path;
+            map.set(path, route.controller as unknown as Controller);
+        }
+
+        return map;
     }
 
     /**
@@ -84,15 +133,6 @@ class RouterService {
             if (thisPath.length && thisPath[0] !== "/") thisPath = "/" + thisPath;
 
             const newPath = parentPath + thisPath;
-
-            // console.log({
-            //     parentPath: route.data.path,
-            //     thisPath: path.data.path,
-            //     newParentPath: parentPath,
-            //     newThisPath: thisPath,
-            //     prevParentPath,
-            //     value: newPath
-            // });
 
             if (path instanceof RouterPath) {
                 arr.push(...this.#parsePaths(path, newPath));

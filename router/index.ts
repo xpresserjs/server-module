@@ -439,13 +439,6 @@ class XpresserRouter<ReqFn extends Function = Function> {
     public useController(controller: string, routes: (router: this) => void): RouterPath {
         return this.path("", routes).controller(controller);
     }
-
-    /**
-     * =================================================================================================================
-     * =========================================== STATIC METHODS =====================================================
-     * =================================================================================================================
-     */
-    static toJson() {}
 }
 
 export default XpresserRouter;
