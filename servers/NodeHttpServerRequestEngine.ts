@@ -1,18 +1,18 @@
 import { RequestEngine } from "../engines/RequestEngine.js";
 import { IncomingMessage, ServerResponse } from "node:http";
+import { URL } from "url";
 
 export default class NodeHttpServerRequestEngine extends RequestEngine {
     public req!: IncomingMessage;
     public res!: ServerResponse;
 
     static async use(req: IncomingMessage, res: ServerResponse) {
-        // parse query
-        const url = new URL(req.url || "", "http://localhost");
-        const query = Object.fromEntries(url.searchParams.entries());
-        const body = await convertBodyToObject(req);
+        const url = new URL(req.url || "", `http://${req.headers.host || "localhost"}`);
+        const query = Object.fromEntries(url.searchParams);
+        const body = await this.convertBodyToObject(req);
 
         const rq = new this({
-            query: query,
+            query,
             body: body || {},
             params: {},
             state: {},
@@ -27,8 +27,8 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
             },
 
             redirect: (url) => {
-                res.statusCode = 302;
-                res.setHeader("Location", url);
+                res.writeHead(302, { Location: url });
+                res.end();
             },
 
             setHeader: (type, key, value) => {
@@ -40,11 +40,9 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
             },
 
             getHeader: (type, key) => {
-                if (type === "response") {
-                    return res.getHeader(key as string) as string;
-                } else {
-                    return req.headers[key as string];
-                }
+                return type === "response"
+                    ? (res.getHeader(key as string) as string)
+                    : req.headers[key as string];
             },
 
             next: () => {
@@ -57,32 +55,20 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
 
         return rq;
     }
-}
 
-// Send JSON Response
-// function sendJson(res: ServerResponse, data: string | object, status = 200) {
-//     // set status code
-//     res.statusCode = status;
-//     res.setHeader("Content-Type", "application/json");
-//     res.write(typeof data === "string" ? data : JSON.stringify(data));
-//     res.end();
-// }
-
-// Convert Body to Object
-function convertBodyToObject(req: IncomingMessage): Promise<Record<string, any> | null> {
-    return new Promise((resolve) => {
-        let body = "";
-
-        req.on("data", (chunk) => {
-            body += chunk.toString();
+    private static convertBodyToObject(req: IncomingMessage): Promise<Record<string, any> | null> {
+        return new Promise((resolve) => {
+            let body = "";
+            req.on("data", (chunk) => {
+                body += chunk;
+            });
+            req.on("end", () => {
+                try {
+                    resolve(JSON.parse(body));
+                } catch {
+                    resolve(null);
+                }
+            });
         });
-
-        req.on("end", () => {
-            try {
-                resolve(JSON.parse(body));
-            } catch (err) {
-                resolve(null);
-            }
-        });
-    });
+    }
 }
