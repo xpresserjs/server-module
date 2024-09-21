@@ -14,7 +14,19 @@ import { OutgoingHttpHeader } from "http";
  */
 
 // Primitive types that can be used in a request body
-// type Primitive = string | number | boolean | null;
+// Primitive types that can be used in a request body
+type Primitive = string | number | boolean | null;
+
+// A single value or a nested object containing various types
+interface JsonObject {
+    [key: string]: JsonValue;
+}
+
+// Array type that can hold any valid JSON values
+type JsonArray = JsonValue[];
+
+// A value in a JSON structure can be any of the following:
+type JsonValue = Primitive | JsonObject | JsonArray;
 
 // Request body can be a primitive, an object, or an array of these types.
 type RequestBody =
@@ -104,7 +116,7 @@ export interface RequestEngineData {
      * if exists, it will be used to respond to request
      * else respond method will be used
      */
-    respondJson?: (data: string) => void;
+    respondJson?: (data: JsonValue) => void;
 }
 
 /**
@@ -260,6 +272,18 @@ export class RequestEngine {
      */
     send<Body>(data: Body) {
         this.data.respond(data);
+    }
+
+    /**
+     * Respond with JSON
+     */
+    json(data: JsonValue) {
+        if (this.data.respondJson) {
+            return this.data.respondJson(data);
+        }
+
+        this.data.setHeader("response", "Content-Type", "application/json");
+        this.data.respond(JSON.stringify(data));
     }
 
     /**

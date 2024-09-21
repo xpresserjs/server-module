@@ -14,11 +14,25 @@ const notFoundResponse = Buffer.from("Not Found!");
 export type ReqHandlerFunction = (req: IncomingMessage, res: ServerResponse) => void;
 
 /**
+ * Provider Configuration
+ */
+export interface NodeHttpServerProviderConfig {
+    requestHandler: "default" | "xpresser";
+}
+
+/**
  * NodeHttpServerProvider - Node Http Server Provider
  * An example of a custom http server provider for xpresser server module
  */
 class NodeHttpServerProvider extends HttpServerProvider implements HttpServerProviderStructure {
     private routes: Map<string, ReqHandlerFunction> | null = null;
+
+    /**
+     * config - Server Configuration
+     */
+    public config: NodeHttpServerProviderConfig = {
+        requestHandler: "default"
+    };
 
     /**
      * init - Initialize Server Provider
@@ -74,7 +88,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * @param req
      * @param res
      */
-    private requestListener(req: IncomingMessage, res: ServerResponse): void {
+    private async requestListener(req: IncomingMessage, res: ServerResponse): Promise<void> {
         const method = req.method?.toUpperCase() ?? "GET";
         const url = req.url ?? "/";
 
