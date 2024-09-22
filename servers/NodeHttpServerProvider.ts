@@ -3,6 +3,7 @@ import { HttpServerProvider, HttpServerProviderStructure, OnHttpListen } from ".
 import XpresserRouter from "../router/index.js";
 import { IncomingMessage, ServerResponse, createServer as createHttpServer } from "node:http";
 import RouterService from "../router/RouterService.js";
+import NodeHttpServerRequestEngine from "./NodeHttpServerRequestEngine.js";
 
 // Pre-defined 404 response to avoid constructing the same response on every request
 const notFoundResponse = Buffer.from("Not Found!");
@@ -33,6 +34,11 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
     public config: NodeHttpServerProviderConfig = {
         requestHandler: "default"
     };
+
+    constructor(config: Partial<NodeHttpServerProviderConfig> = {}) {
+        super();
+        this.config = { ...this.config, ...config };
+    }
 
     /**
      * init - Initialize Server Provider
@@ -91,12 +97,18 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
     private async requestListener(req: IncomingMessage, res: ServerResponse): Promise<void> {
         const method = req.method?.toUpperCase() ?? "GET";
         const url = req.url ?? "/";
+        const pathname = url.split("?")[0];
 
-        const routeKey = `${method} ${url}`;
+        const routeKey = `${method} ${pathname}`;
         const handler = this.routes!.get(routeKey);
 
         if (handler) {
-            handler(req, res);
+            if (this.config.requestHandler === "xpresser") {
+                // Use Xpresser Request Engine
+                (handler as Function)(await NodeHttpServerRequestEngine.use(req, res));
+            } else {
+                handler(req, res);
+            }
         } else {
             this.sendNotFound(res);
         }

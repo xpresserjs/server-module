@@ -1,6 +1,8 @@
-import NodeHttpServerProvider from "../../servers/NodeHttpServerProvider.js";
+import NodeHttpServerProvider, {
+    NodeHttpServerProviderConfig
+} from "../../servers/NodeHttpServerProvider.js";
 
-export async function SetupXpresser() {
+export async function SetupXpresser(config?: NodeHttpServerProviderConfig) {
     const { init, __dirname } = await import("@xpresser/framework");
 
     // Get Base Folder Path
@@ -25,7 +27,7 @@ export async function SetupXpresser() {
     });
 
     // Register Node Server Module with Xpresser
-    const nodeServer = new NodeHttpServerProvider();
+    const nodeServer = new NodeHttpServerProvider(config);
 
     return { $, nodeServer };
 }

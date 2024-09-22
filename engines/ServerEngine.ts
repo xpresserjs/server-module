@@ -36,9 +36,7 @@ class ServerEngine extends BaseEngine {
 
         if (Object.keys($query).length) {
             // @ts-ignore
-            url = buildUrl(url, {
-                queryParams: $query
-            });
+            url = buildUrl(url, { queryParams: $query });
         }
 
         return url;
