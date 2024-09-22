@@ -1,6 +1,7 @@
 import NodeHttpServerProvider, {
     NodeHttpServerProviderConfig
 } from "../../servers/NodeHttpServerProvider.js";
+import { ServerResponse } from "node:http";
 
 export async function SetupXpresser(config?: NodeHttpServerProviderConfig) {
     const { init, __dirname } = await import("@xpresser/framework");
@@ -30,4 +31,14 @@ export async function SetupXpresser(config?: NodeHttpServerProviderConfig) {
     const nodeServer = new NodeHttpServerProvider(config);
 
     return { $, nodeServer };
+}
+
+/**
+ * Respond with text
+ * @param res
+ * @param text
+ */
+export function respond(res: ServerResponse, text: string | number) {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end(text);
 }

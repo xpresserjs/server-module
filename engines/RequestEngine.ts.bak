@@ -115,12 +115,12 @@ export interface RequestEngineData {
     /**
      * Parse Query - Return Parsed Query
      */
-    parseQuery: () => RequestQuery;
+    parseQuery: () => RequestQuery | Promise<RequestQuery>;
 
     /**
      * Parse Params - Return Parsed Params
      */
-    parseParams: () => Record<string, string>;
+    parseParams: () => Record<string, string> | Promise<Record<string, string>>;
 
     /**
      * Next Function (optional)
@@ -158,8 +158,12 @@ const defaultData: RequestEngineData = {
  * ======================== Errors ============================
  * ============================================================
  */
+const ParamsNotParsedError = new Error("Params not parsed yet!");
+const QueryNotParsedError = new Error("Query not parsed yet!");
+const BodyNotParsedError = new Error("Body not parsed yet!");
 
 const QueryIsNotAnObjectError = new Error("Query is not an object!");
+const BodyIsNotAnObjectError = new Error("Body is not an object!");
 
 export class RequestEngine {
     private data: RequestEngineData;
@@ -190,9 +194,9 @@ export class RequestEngine {
     /**
      * Use Params
      */
-    useParams<T = Record<string, any>>(): T {
+    async useParams<T = Record<string, any>>(): Promise<T> {
         if (!this.params) {
-            this.params = this.data.parseParams();
+            this.params = await this.data.parseParams();
         }
 
         return this.params as T;
@@ -201,9 +205,9 @@ export class RequestEngine {
     /**
      * Use Query
      */
-    useQuery<T = RequestQuery>(): T {
+    async useQuery<T = RequestQuery>(): Promise<T> {
         if (!this.query) {
-            this.query = this.data.parseQuery();
+            this.query = await this.data.parseQuery();
         }
 
         return this.query as T;
@@ -233,45 +237,52 @@ export class RequestEngine {
         return this.state;
     }
 
-    /**
-     * Get Param or Default
-     */
-    param(key: string, defaultValue?: string) {
-        const params = this.useParams();
-        return params[key] || defaultValue;
-    }
-
-    /**
-     * Check if request has a param
-     */
-    hasParam(key: string): boolean {
-        return key in this.useParams();
-    }
 
     /**
      * Get Query or Default
      */
     getQuery<T = unknown>(key: string, defaultValue?: T): T {
-        const query = this.useQuery();
-
-        if (typeof query !== "object") {
+        if (typeof this.query !== "object") {
             throw QueryIsNotAnObjectError;
         }
 
-        return (query[key] || defaultValue) as T;
+        return (this.query[key] || defaultValue) as T;
     }
 
     /**
      * Check if request has a query
      */
     hasQuery(key: string): boolean {
-        const query = this.useQuery();
-
-        if (typeof query !== "object") {
+        if (typeof this.query !== "object") {
             throw QueryIsNotAnObjectError;
         }
 
-        return key in query;
+        return key in this.query;
+    }
+
+    /**
+     * Get Query as <T>
+     */
+    queryAs<T>(): T {
+        return this.query as T;
+    }
+
+    /**
+     * Get Body or Default
+     */
+    getBody<T = unknown>(key: string, defaultValue?: T): T {
+        if (typeof this.body !== "object") {
+            throw BodyIsNotAnObjectError;
+        }
+
+        return ((this.body as Record<any, any>)[key] || defaultValue) as T;
+    }
+
+    /**
+     * Get Body as <T>
+     */
+    bodyAs<T>(): T {
+        return this.body as T;
     }
 
     /**

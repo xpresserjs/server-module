@@ -2,21 +2,9 @@ import type { Xpresser } from "@xpresser/framework/xpresser.js";
 import "../index.js";
 import { test } from "@japa/runner";
 import { RegisterServerModule } from "../index.js";
-import { ServerResponse } from "node:http";
 import NodeHttpServerProvider from "../servers/NodeHttpServerProvider.js";
-import { SetupXpresser } from "./src/functions.js";
-import { ReqHandlerFunction } from "../servers/NodeHttpServerRequestEngine.js";
-import XpresserRouter from "../router/index.js";
-
-/**
- * Respond with text
- * @param res
- * @param text
- */
-function respond(res: ServerResponse, text: string) {
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end(text);
-}
+import { respond, SetupXpresser } from "./src/functions.js";
+import { RouterReqHandlerFunction } from "../servers/NodeHttpServerRequestEngine.js";
 
 test.group("Node Server Module", (group) => {
     let $: Xpresser;
@@ -79,11 +67,10 @@ test.group("Node Server Module With Xpresser Engine", (group) => {
     });
 
     test("Add Routes", async () => {
-        const router = nodeServer.getRouter<XpresserRouter<ReqHandlerFunction>>();
+        const router = nodeServer.getRouter<RouterReqHandlerFunction>();
 
         router.get("/", (http) => {
             http.send("Hello World!");
-            console.log(http.query);
         });
 
         router.get("/about", (http) => {

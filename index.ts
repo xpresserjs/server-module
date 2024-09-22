@@ -230,4 +230,19 @@ export async function RegisterServerModule($: Xpresser, provider: HttpServerProv
     );
 }
 
+/**
+ * Register Server Module as default module
+ * Note: this will set server module as default module
+ */
+export async function RegisterServerModuleAsDefault(
+    $: Xpresser,
+    provider: HttpServerProviderStructure
+) {
+    // Register Server Module
+    await RegisterServerModule($, provider);
+
+    // Set Server Module as default module
+    $.modules.setDefault("server");
+}
+
 export default ServerModule;

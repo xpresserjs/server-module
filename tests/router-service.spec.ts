@@ -4,7 +4,7 @@ import { IncomingMessage, ServerResponse } from "node:http";
 import RouterService from "../router/RouterService.js";
 import { SetupXpresser } from "./src/functions.js";
 import { RegisterServerModule } from "../index.js";
-import { NamedFunc } from "../../xpresser-framework/functions/utils.js";
+import { NamedFunc } from "@xpresser/framework/functions/utils.js";
 
 /**
  * Make Handler

@@ -1,6 +1,7 @@
 import { RequestEngine } from "../engines/RequestEngine.js";
 import { IncomingMessage, ServerResponse } from "node:http";
 import { parse as parseUrl } from "url";
+import XpresserRouter from "../router/index.js";
 
 /**
  * @class NodeHttpServerRequestEngine
@@ -42,15 +43,13 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
      * @description Creates and initializes a new NodeHttpServerRequestEngine instance for the given request/response pair.
      * @param {IncomingMessage} req - The Node.js request object
      * @param {ServerResponse} res - The Node.js response object
-     * @returns {Promise<NodeHttpServerRequestEngine>} A promise that resolves to the initialized engine instance
      */
-    static async use(req: IncomingMessage, res: ServerResponse) {
-        const { query, body } = await this.parseRequest(req);
-
+    static async use<T extends typeof NodeHttpServerRequestEngine>(
+        this: T,
+        req: IncomingMessage,
+        res: ServerResponse
+    ) {
         const rq = new this({
-            query,
-            body,
-            params: {},
             state: {},
 
             respond: (data) => {
@@ -79,34 +78,16 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
                 (type === "response"
                     ? res.getHeader(key as string)
                     : req.headers[key as string]) as string,
-
-            next: () => {}
+            // no param support for pure nodejs
+            parseParams: () => ({}),
+            parseQuery: () => this.parseUrl(req.url || ""),
+            parseBody: () => this.parseBody(req)
         });
 
         rq.req = req;
         rq.res = res;
 
-        return rq;
-    }
-
-    /**
-     * @private
-     * @static
-     * @async
-     * @function parseRequest
-     * @description Parses the request URL and body concurrently for improved performance.
-     * @param {IncomingMessage} req - The Node.js request object
-     * @returns {Promise<Object>} A promise that resolves to an object containing parsed query and body
-     */
-    private static async parseRequest(
-        req: IncomingMessage
-    ): Promise<{ query: Record<string, string>; body: Record<string, any> | null }> {
-        const [query, body] = await Promise.all([
-            this.parseUrl(req.url || ""),
-            this.parseBody(req)
-        ]);
-
-        return { query, body };
+        return rq as InstanceType<T>;
     }
 
     /**
@@ -128,9 +109,7 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
             this.urlCache.set(url, cached);
 
             // clear cache after 100,000 entries
-            if (this.urlCache.size > 100000) {
-                this.urlCache.clear();
-            }
+            if (this.urlCache.size > 100000) this.urlCache.clear();
         }
         return { ...cached.query };
     }
@@ -143,9 +122,9 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
      * @param {IncomingMessage} req - The Node.js request object
      * @returns {Promise<Record<string, any> | null>} A promise that resolves to the parsed body or null
      */
-    private static parseBody(req: IncomingMessage): Promise<Record<string, any> | null> {
+    private static parseBody(req: IncomingMessage): Promise<Record<string, any>> {
         if (req.headers["content-type"] !== "application/json") {
-            return Promise.resolve(null);
+            return Promise.resolve({});
         }
 
         return new Promise((resolve) => {
@@ -157,7 +136,7 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
                 try {
                     resolve(JSON.parse(body));
                 } catch {
-                    resolve(null);
+                    resolve({});
                 }
             });
         });
@@ -169,3 +148,4 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
  */
 
 export type ReqHandlerFunction = (http: NodeHttpServerRequestEngine) => void;
+export type RouterReqHandlerFunction = XpresserRouter<ReqHandlerFunction>;
