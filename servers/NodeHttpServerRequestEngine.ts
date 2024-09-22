@@ -126,6 +126,11 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
                 query: parsed.query as Record<string, string>
             };
             this.urlCache.set(url, cached);
+
+            // clear cache after 100,000 entries
+            if (this.urlCache.size > 100000) {
+                this.urlCache.clear();
+            }
         }
         return { ...cached.query };
     }
