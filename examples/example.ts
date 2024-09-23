@@ -7,7 +7,9 @@ const $ = await init({
     paths: { base: __dirname }
 });
 
-const { router } = await useNodeHttpServerProvider($);
+const { router } = await useNodeHttpServerProvider($, {
+    requestHandler: "xpresser"
+});
 
 // router.get("/", (http) => {
 //     http.json({ message: "Hello World!!" });
