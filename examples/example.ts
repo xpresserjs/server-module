@@ -9,9 +9,9 @@ const $ = await init({
 
 const { router } = await useNodeHttpServerProvider($);
 
-router.get("/", (http) => {
-    http.json({ message: "Hello World!!" });
-});
+// router.get("/", (http) => {
+//     http.json({ message: "Hello World!!" });
+// });
 
 router.get("/user/:user", (http) => {
     http.json({
@@ -20,9 +20,9 @@ router.get("/user/:user", (http) => {
     });
 });
 
-router.post("/", async (http) => {
-    const body = await http.useBody();
-    http.json(body);
-});
+// router.post("/", async (http) => {
+//     const body = await http.useBody();
+//     http.json(body);
+// });
 
 await $.start();

@@ -1,4 +1,15 @@
-import type { RouteData, StringOrRegExp } from "./types.js";
+import type { RouteHandlerFunction, StringOrRegExp } from "./types.js";
+import { match, MatchFunction, pathToRegexp } from "path-to-regexp";
+
+export interface RouteData {
+    method: string;
+    path: StringOrRegExp;
+    controller?: RouteHandlerFunction<Function>;
+    name?: string;
+    params?: string[];
+    pathToRegexp?: RegExp;
+    pathToRegexpFn?: MatchFunction<any>;
+}
 
 class RouterRoute {
     public data: RouteData;
@@ -15,8 +26,23 @@ class RouterRoute {
         this.data = {
             method,
             path,
-            controller: <string>controller
+            controller
         };
+
+        if (typeof path === "string") {
+            // get params using path-to-regexp
+            const { keys, regexp } = pathToRegexp(path);
+            const params: string[] = [];
+
+            for (const r of keys) {
+                if (r.type !== "param") continue;
+                params.push(r.name);
+            }
+
+            this.data.params = params;
+            this.data.pathToRegexp = regexp;
+            this.data.pathToRegexpFn = match(path);
+        }
 
         if (typeof controller === "object") {
             // set name

@@ -12,8 +12,11 @@ import type {
 // noinspection JSUnusedGlobalSymbols
 class XpresserRouter<ReqFn extends Function = Function> {
     public namespace: string = "";
+
     public routes: Routes = [];
+
     private readonly xpresserInstanceGetter: (() => any) | undefined;
+
     public readonly config = { pathCase: "snake" } as { pathCase: "snake" | "kebab" };
 
     constructor(namespace?: string, xpresserInstanceGetter?: () => any) {

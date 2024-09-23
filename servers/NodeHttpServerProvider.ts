@@ -1,4 +1,4 @@
-import { Xpresser } from "@xpresser/framework/xpresser.js";
+import { Xpresser } from "@xpresser/framework/index.js";
 import { HttpServerProvider, HttpServerProviderStructure, OnHttpListen } from "../provider.js";
 import XpresserRouter from "../router/index.js";
 import { IncomingMessage, ServerResponse, createServer as createHttpServer } from "node:http";
@@ -7,6 +7,8 @@ import NodeHttpServerRequestEngine, {
     RouterReqHandlerFunction
 } from "./NodeHttpServerRequestEngine.js";
 import { RegisterServerModule } from "../index.js";
+import { RouteData } from "../router/RouterRoute.js";
+import { LRUMap } from "mnemonist";
 
 // Pre-defined 404 response to avoid constructing the same response on every request
 const notFoundResponse = Buffer.from("Not Found!");
@@ -29,7 +31,14 @@ export interface NodeHttpServerProviderConfig {
  * An example of a custom http server provider for xpresser server module
  */
 class NodeHttpServerProvider extends HttpServerProvider implements HttpServerProviderStructure {
-    private routes: Map<string, ReqHandlerFunction> | null = null;
+    // private controllersMap: Map<string, ReqHandlerFunction> | null = null;
+    private routes = new Map<string, RouteData>();
+
+    /**
+     * Params Cache
+     */
+    // @ts-ignore
+    private paramsCache = new LRUMap(100_000);
 
     /**
      * config - Server Configuration
@@ -61,7 +70,8 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
     async boot($: Xpresser): Promise<void> {
         const router = this.getRouter();
         const routerService = RouterService.use(router);
-        this.routes = routerService.toControllerMap<ReqHandlerFunction>();
+
+        this.routes = routerService.toMap();
 
         const server = createHttpServer(this.requestListener.bind(this));
 
@@ -104,17 +114,50 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
         const pathname = url.split("?")[0];
 
         const routeKey = `${method} ${pathname}`;
-        const handler = this.routes!.get(routeKey);
+        const route = this.routes!.get(routeKey);
+        let found = false;
 
-        if (handler) {
+        if (route) {
             if (this.useNativeRequestHandler) {
-                handler(req, res);
+                (route.controller as Function)(req, res);
             } else {
-                (handler as Function)(NodeHttpServerRequestEngine.use(req, res));
+                (route.controller as Function)(NodeHttpServerRequestEngine.use(route, req, res));
             }
+
+            found = true;
         } else {
             // try path-to-regexp
-            console.log("Not Found", routeKey);
+
+            for (const [, value] of this.routes!.entries()) {
+                if (!value.pathToRegexpFn || !value.pathToRegexp) continue;
+
+                // check if route matches
+                const regexpMatch = value.pathToRegexpFn(pathname);
+                if (!regexpMatch) continue;
+
+                const cacheKey = `${method} ${value.path}`;
+                this.paramsCache.set(cacheKey, regexpMatch.params);
+
+                if (this.useNativeRequestHandler) {
+                    (value.controller as Function)(req, res);
+                } else {
+                    (value.controller as Function)(
+                        NodeHttpServerRequestEngine.use(value, req, res)
+                    );
+                }
+
+                // set params cache
+                this.paramsCache.set(pathname, {
+                    // pathMatch: pathMatch
+                });
+                console.log({
+                    pathname,
+                    regexpMatch
+                });
+            }
+        }
+
+        if (!found) {
             this.sendNotFound(res);
         }
     }

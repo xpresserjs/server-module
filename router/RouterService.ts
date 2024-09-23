@@ -1,8 +1,6 @@
 import Router from "./index.js";
-import { RouteData } from "./types.js";
 import RouterPath from "./RouterPath.js";
-
-// type RoutesArray = Array<RouteData | RoutePathData>;
+import { RouteData } from "./RouterRoute.js";
 
 /**
  * Router Service

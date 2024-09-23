@@ -1,4 +1,14 @@
-import type { RoutePathData, StringOrRegExp, Routes } from "./types.js";
+import type { StringOrRegExp, Routes } from "./types.js";
+
+export interface RoutePathData {
+    method?: string;
+    path: StringOrRegExp;
+    controller?: string;
+    middleware?: string | string[];
+    as?: string;
+    children?: Routes;
+    useActionsAsName?: boolean;
+}
 
 class RouterPath {
     public data: RoutePathData;

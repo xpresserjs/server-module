@@ -6,6 +6,7 @@
 import type { IncomingHttpHeaders, OutgoingHttpHeaders } from "node:http";
 import { ObjectCollection } from "object-collection";
 import { OutgoingHttpHeader } from "http";
+import { RouteData } from "../router/RouterRoute.js";
 
 /**
  * ============================================================
@@ -161,6 +162,14 @@ const defaultData: RequestEngineData = {
 
 const QueryIsNotAnObjectError = new Error("Query is not an object!");
 
+/**
+ * ============================================================
+ * ======================== Request Engine ====================
+ * ============================================================
+ */
+
+export type RequestEngineRoute = Pick<RouteData, "method" | "path" | "name" | "params">;
+
 export class RequestEngine {
     private data: RequestEngineData;
     private state: ObjectCollection | undefined;
@@ -182,7 +191,15 @@ export class RequestEngine {
      */
     private params!: Record<string, string>;
 
-    constructor(data: RequestEngineData) {
+    /**
+     * Request Object
+     */
+    readonly route: RequestEngineRoute;
+
+    constructor(route: RouteData, data: RequestEngineData) {
+        // Set Route
+        this.route = RequestEngine.getRouteData(route);
+
         // Setup Request Engine
         this.data = { ...defaultData, ...data };
     }
@@ -362,5 +379,18 @@ export class RequestEngine {
     ) {
         this.data.setHeader("request", key, value);
         return this;
+    }
+
+    /**
+     * Get Route Data
+     * @param route
+     */
+    static getRouteData(route: RouteData): RequestEngineRoute {
+        return {
+            method: route.method,
+            name: route.name,
+            params: route.params,
+            path: route.path
+        };
     }
 }
