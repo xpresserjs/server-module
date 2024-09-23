@@ -1,9 +1,10 @@
 import type { Xpresser } from "@xpresser/framework/xpresser.js";
 import "../index.js";
 import { test } from "@japa/runner";
-import { RegisterServerModule } from "../index.js";
-import NodeHttpServerProvider from "../servers/NodeHttpServerProvider.js";
-import { respond, SetupXpresser } from "./src/functions.js";
+import NodeHttpServerProvider, {
+    useNodeHttpServerProvider
+} from "../servers/NodeHttpServerProvider.js";
+import { respond, SetupXpresser, TearDownXpresser } from "./src/functions.js";
 import { RouterReqHandlerFunction } from "../servers/NodeHttpServerRequestEngine.js";
 
 test.group("Node Server Module", (group) => {
@@ -11,15 +12,16 @@ test.group("Node Server Module", (group) => {
     let nodeServer: NodeHttpServerProvider;
 
     group.setup(async () => {
-        const setup = await SetupXpresser();
-        $ = setup.$;
-        nodeServer = setup.nodeServer;
+        $ = await SetupXpresser();
+
+        const http = await useNodeHttpServerProvider($, {
+            defaultModule: true
+        });
+
+        nodeServer = http.server;
     });
 
-    test("Register Node Server Module", async () => {
-        await RegisterServerModule($, nodeServer);
-        $.modules.setDefault("server");
-    });
+    group.teardown(() => TearDownXpresser($));
 
     test("Add Routes", async () => {
         const router = nodeServer.getRouter();
@@ -42,33 +44,26 @@ test.group("Node Server Module", (group) => {
 
         await $.start();
     });
-
-    group.teardown(async () => {
-        await $.stop();
-    });
 });
 
 test.group("Node Server Module With Xpresser Engine", (group) => {
     let $: Xpresser;
     let nodeServer: NodeHttpServerProvider;
+    let router: RouterReqHandlerFunction;
 
     group.setup(async () => {
-        const setup = await SetupXpresser({
-            requestHandler: "xpresser"
+        $ = await SetupXpresser();
+        const http = await useNodeHttpServerProvider($, {
+            defaultModule: true
         });
 
-        $ = setup.$;
-        nodeServer = setup.nodeServer;
+        nodeServer = http.server;
+        router = http.router;
     });
 
-    test("Register Node Server Module", async () => {
-        await RegisterServerModule($, nodeServer);
-        $.modules.setDefault("server");
-    });
+    group.teardown(() => TearDownXpresser($));
 
     test("Add Routes", async () => {
-        const router = nodeServer.getRouter<RouterReqHandlerFunction>();
-
         router.get("/", (http) => {
             http.send("Hello World!");
         });

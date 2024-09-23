@@ -1,9 +1,7 @@
-import NodeHttpServerProvider, {
-    NodeHttpServerProviderConfig
-} from "../../servers/NodeHttpServerProvider.js";
+import { Xpresser } from "@xpresser/framework";
 import { ServerResponse } from "node:http";
 
-export async function SetupXpresser(config?: NodeHttpServerProviderConfig) {
+export async function SetupXpresser() {
     const { init, __dirname } = await import("@xpresser/framework");
 
     // Get Base Folder Path
@@ -23,14 +21,19 @@ export async function SetupXpresser(config?: NodeHttpServerProviderConfig) {
     });
 
     $.onNext("stopped", function LogOnStop() {
-        // Log Calmly
-        $.console.logInfo(`<----- ${$.config.data.name} stopped. ----->`);
+        $.console.logCalmly(`<----- ${$.config.data.name} stopped. ----->`);
     });
 
-    // Register Node Server Module with Xpresser
-    const nodeServer = new NodeHttpServerProvider(config);
+    return $;
+}
 
-    return { $, nodeServer };
+/**
+ * Tear down Xpresser
+ * @param $
+ * @constructor
+ */
+export async function TearDownXpresser($: Xpresser) {
+    await $.stop();
 }
 
 /**

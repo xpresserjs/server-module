@@ -212,7 +212,7 @@ export class RequestEngine {
     /**
      * Use Body
      */
-    async useBody<T = RequestBody>(): Promise<T> {
+    async useBody<T extends RequestBody = Record<any, any>>(): Promise<T> {
         if (!this.body) {
             this.body = await this.data.parseBody();
         }

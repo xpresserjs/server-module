@@ -192,12 +192,17 @@ class ServerModule extends BaseModule implements BaseModule {
  * This function is called by the provider
  * @param $
  * @param provider
+ * @param asDefault
  * @example
  *
  * const provider = new HttpServerProvider();
  * await RegisterServerModule($, provider);
  */
-export async function RegisterServerModule($: Xpresser, provider: HttpServerProviderStructure) {
+export async function RegisterServerModule(
+    $: Xpresser,
+    provider: HttpServerProviderStructure,
+    asDefault = false
+) {
     let customCycles: string[] = [];
 
     // check if provider has custom boot cycles
@@ -210,6 +215,12 @@ export async function RegisterServerModule($: Xpresser, provider: HttpServerProv
         // add provider custom boot cycles
         addBootCycles: customCycles as BootCycle.Cycles[]
     });
+
+    // if asDefault is true
+    if (asDefault) {
+        // set as default module
+        $.modules.setDefault("server");
+    }
 
     /**
      * Set Server Module Provider
@@ -234,15 +245,8 @@ export async function RegisterServerModule($: Xpresser, provider: HttpServerProv
  * Register Server Module as default module
  * Note: this will set server module as default module
  */
-export async function RegisterServerModuleAsDefault(
-    $: Xpresser,
-    provider: HttpServerProviderStructure
-) {
-    // Register Server Module
-    await RegisterServerModule($, provider);
-
-    // Set Server Module as default module
-    $.modules.setDefault("server");
+export function RegisterServerModuleAsDefault($: Xpresser, provider: HttpServerProviderStructure) {
+    return RegisterServerModule($, provider, true);
 }
 
 export default ServerModule;

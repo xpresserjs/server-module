@@ -3,7 +3,10 @@ import { HttpServerProvider, HttpServerProviderStructure, OnHttpListen } from ".
 import XpresserRouter from "../router/index.js";
 import { IncomingMessage, ServerResponse, createServer as createHttpServer } from "node:http";
 import RouterService from "../router/RouterService.js";
-import NodeHttpServerRequestEngine from "./NodeHttpServerRequestEngine.js";
+import NodeHttpServerRequestEngine, {
+    RouterReqHandlerFunction
+} from "./NodeHttpServerRequestEngine.js";
+import { RegisterServerModule } from "../index.js";
 
 // Pre-defined 404 response to avoid constructing the same response on every request
 const notFoundResponse = Buffer.from("Not Found!");
@@ -32,7 +35,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * config - Server Configuration
      */
     public config: NodeHttpServerProviderConfig = {
-        requestHandler: "default"
+        requestHandler: "xpresser"
     };
 
     constructor(config: Partial<NodeHttpServerProviderConfig> = {}) {
@@ -56,8 +59,6 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
         const router = this.getRouter();
         const routerService = RouterService.use(router);
         this.routes = routerService.toControllerMap<ReqHandlerFunction>();
-
-        $.console.logInfo(`Using ${this.routes.size} routes.`);
 
         const server = createHttpServer(this.requestListener.bind(this));
 
@@ -132,3 +133,35 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
 }
 
 export default NodeHttpServerProvider;
+
+/**
+ * useNodeHttpServerProvider - Use Node Http Server Provider
+ * @param $
+ * @param config
+ * @example
+ * const { router } = await useNodeHttpServerProvider($);
+ *
+ * router.get("/", (http) => {
+ *     http.json({ message: "Hello World!!" });
+ * });
+ */
+export async function useNodeHttpServerProvider(
+    $: Xpresser,
+    config: Partial<NodeHttpServerProviderConfig & { defaultModule: true }> = {}
+) {
+    const { defaultModule, ...otherConfigs } = config;
+
+    // Initialize Server
+    const server = new NodeHttpServerProvider(otherConfigs);
+
+    // Register Server Module
+    await RegisterServerModule($, server, defaultModule === true);
+
+    // Return raw router that makes use of the default request engine
+    const rawRouter = server.getRouter();
+
+    // Return router type that makes use of the xpresser request handler
+    const router = server.getRouter<RouterReqHandlerFunction>();
+
+    return { server, rawRouter, router };
+}

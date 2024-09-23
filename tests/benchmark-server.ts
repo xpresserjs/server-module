@@ -3,7 +3,7 @@ import { RegisterServerModuleAsDefault } from "../index.js";
 import { RouterReqHandlerFunction } from "../servers/NodeHttpServerRequestEngine.js";
 
 const { $, nodeServer } = await SetupXpresser({
-    requestHandler: "default"
+    requestHandler: "xpresser"
 });
 
 // Register Server Module
@@ -16,8 +16,7 @@ if (nodeServer.config.requestHandler === "xpresser") {
     const router = nodeServer.getRouter<RouterReqHandlerFunction>();
 
     router.get("/", (http) => {
-        http.json(http.useQuery());
-        // http.send("1");
+        http.send("1");
     });
 } else {
     const router = nodeServer.getRouter();

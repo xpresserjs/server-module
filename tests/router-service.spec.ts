@@ -1,10 +1,12 @@
 import { test } from "@japa/runner";
 import Router from "../router/index.js";
 import { IncomingMessage, ServerResponse } from "node:http";
-import RouterService from "../router/RouterService.js";
-import { SetupXpresser } from "./src/functions.js";
-import { RegisterServerModule } from "../index.js";
+import { SetupXpresser, TearDownXpresser } from "./src/functions.js";
 import { NamedFunc } from "@xpresser/framework/functions/utils.js";
+import { RouteData } from "../router/types.js";
+import { Xpresser } from "@xpresser/framework";
+import { useNodeHttpServerProvider } from "../servers/NodeHttpServerProvider.js";
+import RouterService from "../router/RouterService.js";
 
 /**
  * Make Handler
@@ -34,10 +36,18 @@ const handlers = {
 };
 
 test.group("RouterService", (group) => {
-    let router = new Router();
-    const routerService = new RouterService(router);
+    let $: Xpresser;
+    let router: Router;
+    let routerService: RouterService;
 
     group.setup(async () => {
+        $ = await SetupXpresser();
+        const { rawRouter } = await useNodeHttpServerProvider($, { defaultModule: true });
+
+        // set globals
+        router = rawRouter;
+        routerService = RouterService.use(router);
+
         router.get("/", handlers.index);
         router.get("/about", handlers.about);
 
@@ -56,15 +66,10 @@ test.group("RouterService", (group) => {
             });
         });
 
-        const { $, nodeServer } = await SetupXpresser();
-        await RegisterServerModule($, nodeServer);
-        $.modules.setDefault("server");
-
-        // Set Router
-        nodeServer.setRouter(router);
-
         await $.start();
     });
+
+    group.teardown(() => TearDownXpresser($));
 
     test("Should add routes to router", ({ assert }) => {
         // routes should be 3
@@ -73,48 +78,39 @@ test.group("RouterService", (group) => {
         assert.equal(router.routes.length, 3);
     });
 
-    test("toArray()", () => {
-        const json = routerService.toArray();
-        console.log(json);
-        // routerService.toArray();
-        // assert.deepEqual(json, [
-        //     { method: "GET", path: "/", controller: demoHandler },
-        //     { method: "GET", path: "/about", controller: demoHandler },
-        //     { method: "GET", path: "/api", controller: demoHandler },
-        //     { method: "GET", path: "/api/users", controller: demoHandler }
-        // ] as typeof json);
+    const expectedRoutes: RouteData[] = [
+        { method: "GET", path: "/", controller: handlers.index },
+        { method: "GET", path: "/about", controller: handlers.about },
+        { method: "GET", path: "/api", controller: handlers.api_index },
+        { method: "GET", path: "/api/users", controller: handlers.api_users },
+        { method: "GET", path: "/api/user/:user", controller: handlers.api_user_index },
+        { method: "POST", path: "/api/user/:user", controller: handlers.api_user_profile },
+        {
+            method: "GET",
+            path: "/api/user/:user/posts",
+            controller: handlers.api_user_posts_index
+        },
+        {
+            method: "POST",
+            path: "/api/user/:user/posts",
+            controller: handlers.api_user_posts_create
+        }
+    ];
+
+    test("toArray()", ({ assert }) => {
+        const all = routerService.toArray();
+        assert.deepEqual(all, expectedRoutes);
     });
 
-    // test("toJson()", ({ assert }) => {
-    //     const json = routerService.toJson();
-    //     assert.equal(
-    //         json,
-    //         JSON.stringify([
-    //             { method: "GET", path: "/" },
-    //             { method: "GET", path: "/about" },
-    //             {
-    //                 path: "/api",
-    //                 children: [
-    //                     { method: "GET", path: "/" },
-    //                     { method: "GET", path: "/users" }
-    //                 ]
-    //             }
-    //         ] as Array<RouteData | RoutePathData>)
-    //     );
-    // }).skip();
-    //
-    // test("toJsonObject()", ({ assert }) => {
-    //     const json = routerService.toJsonObject();
-    //     assert.deepEqual(json, [
-    //         { method: "GET", path: "/" },
-    //         { method: "GET", path: "/about" },
-    //         {
-    //             path: "/api",
-    //             children: [
-    //                 { method: "GET", path: "/" },
-    //                 { method: "GET", path: "/users" }
-    //             ]
-    //         }
-    //     ] as typeof json);
-    // }).skip();
+    test("toJson()", ({ assert }) => {
+        const json = routerService.toJson();
+        assert.equal(json, JSON.stringify(expectedRoutes));
+    });
+
+    test("toJsonObject()", ({ assert }) => {
+        const obj = routerService.toJsonObject();
+        const expected = JSON.parse(JSON.stringify(expectedRoutes));
+
+        assert.deepEqual(obj, expected);
+    });
 });
