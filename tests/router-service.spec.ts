@@ -42,10 +42,10 @@ test.group("RouterService", (group) => {
 
     group.setup(async () => {
         $ = await SetupXpresser();
-        const { rawRouter } = await useNodeHttpServerProvider($, { defaultModule: true });
+        const { nativeRouter } = await useNodeHttpServerProvider($, { defaultModule: true });
 
         // set globals
-        router = rawRouter;
+        router = nativeRouter;
         routerService = RouterService.use(router);
 
         router.get("/", handlers.index);

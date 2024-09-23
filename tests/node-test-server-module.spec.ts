@@ -16,7 +16,7 @@ test.group("Node Server Module", (group) => {
         $ = await SetupXpresser();
 
         const http = await useNodeHttpServerProvider($, {
-            requestHandler: "default",
+            requestHandler: "native",
             defaultModule: true
         });
 
@@ -26,7 +26,7 @@ test.group("Node Server Module", (group) => {
     group.teardown(() => TearDownXpresser($));
 
     test("Add Routes", async () => {
-        const router = nodeServer.getRouter();
+        const router = nodeServer.getNativeRouter();
 
         router.get("/", (_req, res) => {
             respond(res, "Hello World!");

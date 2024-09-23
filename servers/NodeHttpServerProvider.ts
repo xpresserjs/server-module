@@ -21,7 +21,7 @@ export type ReqHandlerFunction = (req: IncomingMessage, res: ServerResponse) => 
  * Provider Configuration
  */
 export interface NodeHttpServerProviderConfig {
-    requestHandler: "default" | "xpresser";
+    requestHandler: "native" | "xpresser";
 }
 
 /**
@@ -38,9 +38,12 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
         requestHandler: "xpresser"
     };
 
+    private readonly useNativeRequestHandler;
+
     constructor(config: Partial<NodeHttpServerProviderConfig> = {}) {
         super();
         this.config = { ...this.config, ...config };
+        this.useNativeRequestHandler = this.config.requestHandler === "native";
     }
 
     /**
@@ -104,13 +107,14 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
         const handler = this.routes!.get(routeKey);
 
         if (handler) {
-            if (this.config.requestHandler === "xpresser") {
-                // Use Xpresser Request Engine
-                (handler as Function)(await NodeHttpServerRequestEngine.use(req, res));
-            } else {
+            if (this.useNativeRequestHandler) {
                 handler(req, res);
+            } else {
+                (handler as Function)(NodeHttpServerRequestEngine.use(req, res));
             }
         } else {
+            // try path-to-regexp
+            console.log("Not Found", routeKey);
             this.sendNotFound(res);
         }
     }
@@ -125,9 +129,31 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
     }
 
     /**
-     * Define Router Getter to have types
+     * Get Router - Returns Xpresser Router
+     * @example
+     * const router = server.getRouter();
+     *
+     * router.get("/", (http) => {
+     *     // `http` is an instance of Xpresser Request Engine
+     *     http.send("Hello World!");
+     * })
      */
-    getRouter<Router = XpresserRouter<ReqHandlerFunction>>(): Router {
+    getRouter<Router = RouterReqHandlerFunction>(): Router {
+        return super.getRouter() as Router;
+    }
+
+    /**
+     * Get Native Router - same as `getRouter` but returns as a typed version of `http.IncomingMessage`
+     * @example
+     * const router = server.getNativeRouter();
+     *
+     * router.get("/", (req, res) => {
+     *    // `req` is an instance of `http.IncomingMessage`
+     *    // `res` is an instance of `http.ServerResponse`
+     *    res.end("Hello World!");
+     * })
+     */
+    getNativeRouter<Router = XpresserRouter<ReqHandlerFunction>>(): Router {
         return super.getRouter() as Router;
     }
 }
@@ -158,10 +184,10 @@ export async function useNodeHttpServerProvider(
     await RegisterServerModule($, server, defaultModule === true);
 
     // Return raw router that makes use of the default request engine
-    const rawRouter = server.getRouter();
+    const nativeRouter = server.getNativeRouter();
 
     // Return router type that makes use of the xpresser request handler
-    const router = server.getRouter<RouterReqHandlerFunction>();
+    const router = server.getRouter();
 
-    return { server, rawRouter, router };
+    return { server, nativeRouter, router };
 }

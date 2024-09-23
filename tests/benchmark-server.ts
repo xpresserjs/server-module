@@ -1,28 +1,21 @@
 import { respond, SetupXpresser } from "./src/functions.js";
-import { RegisterServerModuleAsDefault } from "../index.js";
-import { RouterReqHandlerFunction } from "../servers/NodeHttpServerRequestEngine.js";
+import { useNodeHttpServerProvider } from "../servers/NodeHttpServerProvider.js";
 
-const { $, nodeServer } = await SetupXpresser({
-    requestHandler: "xpresser"
+const $ = await SetupXpresser();
+const { server, router, nativeRouter } = await useNodeHttpServerProvider($, {
+    defaultModule: true
 });
 
-// Register Server Module
-await RegisterServerModuleAsDefault($, nodeServer);
-const handler = nodeServer.config.requestHandler;
-
+const handler = server.config.requestHandler;
 $.console.logInfo(`Using [${handler}] Request Handler`);
 
-if (nodeServer.config.requestHandler === "xpresser") {
-    const router = nodeServer.getRouter<RouterReqHandlerFunction>();
-
-    router.get("/", (http) => {
-        http.send("1");
+if (server.config.requestHandler === "native") {
+    nativeRouter.get("/", (_req, res) => {
+        respond(res, "1");
     });
 } else {
-    const router = nodeServer.getRouter();
-
-    router.get("/", (_req, res) => {
-        respond(res, "2");
+    router.get("/", (http) => {
+        http.send("1");
     });
 }
 

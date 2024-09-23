@@ -44,7 +44,7 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
      * @param {IncomingMessage} req - The Node.js request object
      * @param {ServerResponse} res - The Node.js response object
      */
-    static async use<T extends typeof NodeHttpServerRequestEngine>(
+    static use<T extends typeof NodeHttpServerRequestEngine>(
         this: T,
         req: IncomingMessage,
         res: ServerResponse
