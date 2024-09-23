@@ -20,10 +20,6 @@ export async function SetupXpresser() {
         log: { asciiArt: false }
     });
 
-    $.onNext("stopped", function LogOnStop() {
-        $.console.logCalmly(`<----- ${$.config.data.name} stopped. ----->`);
-    });
-
     return $;
 }
 

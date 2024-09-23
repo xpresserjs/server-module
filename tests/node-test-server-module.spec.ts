@@ -7,6 +7,7 @@ import NodeHttpServerProvider, {
 import { respond, SetupXpresser, TearDownXpresser } from "./src/functions.js";
 import { RouterReqHandlerFunction } from "../servers/NodeHttpServerRequestEngine.js";
 
+const API_TIMEOUT = 5000;
 test.group("Node Server Module", (group) => {
     let $: Xpresser;
     let nodeServer: NodeHttpServerProvider;
@@ -15,6 +16,7 @@ test.group("Node Server Module", (group) => {
         $ = await SetupXpresser();
 
         const http = await useNodeHttpServerProvider($, {
+            requestHandler: "default",
             defaultModule: true
         });
 
@@ -43,6 +45,18 @@ test.group("Node Server Module", (group) => {
         });
 
         await $.start();
+    });
+
+    test("GET /", async ({ client, assert }) => {
+        const response = await client.get("/").timeout(API_TIMEOUT);
+        response.assertStatus(200);
+        assert.equal(response.text(), "Hello World!");
+    });
+
+    test("GET /about", async ({ client, assert }) => {
+        const response = await client.get("/about").timeout(API_TIMEOUT);
+        response.assertStatus(200);
+        assert.equal(response.text(), "About Page");
     });
 });
 
@@ -81,5 +95,17 @@ test.group("Node Server Module With Xpresser Engine", (group) => {
         });
 
         await $.start();
+    });
+
+    test("GET /", async ({ client, assert }) => {
+        const response = await client.get("/").timeout(API_TIMEOUT);
+        response.assertStatus(200);
+        assert.equal(response.text(), "Hello World!");
+    });
+
+    test("GET /about", async ({ client, assert }) => {
+        const response = await client.get("/about").timeout(API_TIMEOUT);
+        response.assertStatus(200);
+        assert.equal(response.text(), "About Page");
     });
 });

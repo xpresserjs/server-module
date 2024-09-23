@@ -5,6 +5,7 @@
     "types": [
       "@japa/runner",
       "@japa/assert",
+      "@japa/api-client"
     ]
   },
   "exclude": [
