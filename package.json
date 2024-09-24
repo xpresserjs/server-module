@@ -19,12 +19,11 @@
   "private": false,
   "scripts": {
     "watch": "npx tsc -w",
-    "prepublishOnly": "npx tsc",
+    "prepublishOnly": "npx tsc && npm run test",
     "test": "node --loader ts-node/esm --enable-source-maps bin/test.ts",
     "test:watch": "npx tsx watch bin/test.ts"
   },
   "dependencies": {
-    "@googlicius/build-url": "^1.0.11",
     "lru-cache": "^11.0.1",
     "moment": "^2.30.1",
     "object-collection": "4.1.5",
@@ -38,7 +37,7 @@
     "@types/autocannon": "^7.12.5",
     "@types/lodash-es": "^4.17.10",
     "@types/node": "^20.8.10",
-    "@xpresser/framework": "^0.0.34",
+    "@xpresser/framework": "^0.0.35",
     "autocannon": "^7.15.0",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.3",

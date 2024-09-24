@@ -32,16 +32,6 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
     public res!: ServerResponse;
 
     /**
-     * @private
-     * @static
-     * @property {Map<string, Object>} urlCache - Cache for parsed URLs to improve performance
-     */
-    private static urlCache = new Map<
-        string,
-        { pathname: string; query: Record<string, string> }
-    >();
-
-    /**
      * @description Creates and initializes a new NodeHttpServerRequestEngine instance for the given request/response pair.
      * @param $
      * @param {IncomingMessage} req - The Node.js request object
@@ -106,19 +96,9 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
      * @returns {Record<string, string>} The parsed query parameters
      */
     private static parseUrl(url: string): Record<string, string> {
-        let cached = this.urlCache.get(url);
-        if (!cached) {
-            const parsed = parseUrl(url, true);
-            cached = {
-                pathname: parsed.pathname || "",
-                query: parsed.query as Record<string, string>
-            };
-            this.urlCache.set(url, cached);
+        const parsed = parseUrl(url, true);
 
-            // clear cache after 100,000 entries
-            if (this.urlCache.size > 100000) this.urlCache.clear();
-        }
-        return { ...cached.query };
+        return { ...parsed.query } as Record<string, string>;
     }
 
     /**
@@ -136,9 +116,11 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
 
         return new Promise((resolve) => {
             let body = "";
+
             req.on("data", (chunk) => {
                 body += chunk;
             });
+
             req.on("end", () => {
                 try {
                     resolve(JSON.parse(body));

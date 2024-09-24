@@ -240,12 +240,12 @@ export class RequestEngine {
      * To prevent memory leaks, we only set state when it is necessary.
      * So to use state, you must call this method.
      */
-    useState(): ObjectCollection {
+    useState<T extends Record<string, any>>(): ObjectCollection<T> {
         if (!this.state) {
             this.state = new ObjectCollection(this.data.state);
         }
 
-        return this.state;
+        return this.state as ObjectCollection<T>;
     }
 
     /**
@@ -389,6 +389,7 @@ export class RequestEngine {
 
         return $.engine(ServerEngine).url($path, $query);
     }
+
     /**
      * Get Route Data
      * @param route
