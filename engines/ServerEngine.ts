@@ -1,10 +1,12 @@
 import BaseEngine from "@xpresser/framework/engines/BaseEngine.js";
-import buildUrl from "@googlicius/build-url";
+import queryString from "query-string";
 
 class ServerEngine extends BaseEngine {
     static config = {
         name: "Xpresser/ServerEngine"
     };
+
+    public baseUrl?: string;
 
     /**
      * Get full url of path
@@ -12,31 +14,33 @@ class ServerEngine extends BaseEngine {
      * @param {object} $query
      */
     url($path: string = "", $query: any = {}) {
-        let url: string;
-        const server = this.$.config.getTyped("server")!;
+        if (!this.baseUrl) {
+            const server = this.$.config.getTyped("server")!;
 
-        if ($path.substring(0, 1) === "/") $path = $path.substring(1);
+            if (server.baseUrl && server.baseUrl.length) {
+                this.baseUrl = server.baseUrl;
+            } else {
+                let d = server.domain;
+                let p = server.protocol;
 
-        if (server.baseUrl && server.baseUrl.length) {
-            url = server.baseUrl + $path;
-        } else {
-            let d = server.domain;
-            let p = server.protocol;
+                if (server.includePortInUrl && server.port !== 80 && server.port !== 443) {
+                    d = d + ":" + server.port;
+                }
 
-            if (server.includePortInUrl && server.port !== 80 && server.port !== 443) {
-                d = d + ":" + server.port;
+                if (this.$.config.get("server.ssl.enabled", false)) {
+                    p = "https";
+                }
+
+                this.baseUrl = p + "://" + d + server.root;
             }
-
-            if (this.$.config.get("server.ssl.enabled", false)) {
-                p = "https";
-            }
-
-            url = p + "://" + d + server.root + $path;
         }
 
+        if ($path[0] === "/") $path = $path.substring(1);
+        let url = this.baseUrl + $path;
+
         if (Object.keys($query).length) {
-            // @ts-ignore
-            url = buildUrl(url, { queryParams: $query });
+            const query = queryString.stringify($query);
+            url = url + "?" + query;
         }
 
         return url;

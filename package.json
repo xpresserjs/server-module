@@ -28,7 +28,8 @@
     "lru-cache": "^11.0.1",
     "moment": "^2.30.1",
     "object-collection": "4.1.5",
-    "path-to-regexp": "^8.1.0"
+    "path-to-regexp": "^8.1.0",
+    "query-string": "^9.1.0"
   },
   "devDependencies": {
     "@japa/api-client": "^2.0.3",

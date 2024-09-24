@@ -1,6 +1,6 @@
 import Router from "./index.js";
 import RouterPath from "./RouterPath.js";
-import { RouteData } from "./RouterRoute.js";
+import type { RouteData } from "./RouterRoute.js";
 
 /**
  * Router Service
@@ -33,7 +33,11 @@ class RouterService {
      * Convert router routes to JSON
      */
     toJson() {
-        return JSON.stringify(this.toArray());
+        // remove some fields
+        return JSON.stringify(this.toArray(), (key, value) => {
+            if (key === "pathToRegexp") return undefined;
+            return value;
+        });
     }
 
     /**

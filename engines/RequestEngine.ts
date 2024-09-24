@@ -8,6 +8,7 @@ import { ObjectCollection } from "object-collection";
 import { OutgoingHttpHeader } from "http";
 import { RouteData } from "../router/RouterRoute.js";
 import { Xpresser } from "@xpresser/framework";
+import ServerEngine from "./ServerEngine.js";
 
 /**
  * ============================================================
@@ -378,6 +379,16 @@ export class RequestEngine {
         return this;
     }
 
+    /**
+     * Get full url of path
+     * @param {string} $path
+     * @param {object} $query
+     */
+    url($path: string = "", $query: any = {}) {
+        const $ = this.useXpresser();
+
+        return $.engine(ServerEngine).url($path, $query);
+    }
     /**
      * Get Route Data
      * @param route

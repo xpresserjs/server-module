@@ -101,7 +101,13 @@ test.group("RouterService", (group) => {
         const all = routerService.toArray();
         for (const route of all) {
             if (typeof route.path === "string") {
-                assert.properties(route, ["method", "path", "controller", "pathToRegexpFn"]);
+                assert.properties(route, [
+                    "method",
+                    "path",
+                    "controller",
+                    "pathToRegexp",
+                    "pathToRegexpFn"
+                ]);
             } else {
                 assert.properties(route, ["method", "path", "controller"]);
             }

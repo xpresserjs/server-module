@@ -27,8 +27,7 @@ class RouterRoute {
         this.data = {
             method,
             path,
-            controller,
-            controllerIsAsync: false
+            controller
         };
 
         if (typeof path === "string") {
@@ -41,7 +40,8 @@ class RouterRoute {
                 params.push(r.name);
             }
 
-            this.data.params = params;
+            if (params.length) this.data.params = params;
+
             this.data.pathToRegexp = regexp;
             this.data.pathToRegexpFn = match(path);
         }
