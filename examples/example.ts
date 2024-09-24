@@ -7,9 +7,7 @@ const $ = await init({
     paths: { base: __dirname(import.meta.url) }
 });
 
-const { router } = await useNodeHttpServerProvider($, {
-    requestHandler: "xpresser"
-});
+const { router } = await useNodeHttpServerProvider($);
 
 router.get("/", (http) => {
     http.send("Hello World!!");

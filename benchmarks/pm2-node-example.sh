@@ -1,1 +1,0 @@
-pm2 --name=node-example start ./build/examples/example.js -- server

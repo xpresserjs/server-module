@@ -1,1 +1,0 @@
-pm2 start --interpreter ~/.bun/bin/bun ./examples/example.ts -- server

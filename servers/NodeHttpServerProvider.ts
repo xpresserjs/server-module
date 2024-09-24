@@ -125,11 +125,9 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
     async boot($: Xpresser): Promise<void> {
         const router = this.getRouter();
         const routerService = RouterService.use(router);
-
         this.routes = routerService.toMap();
 
         const server = createHttpServer(this.requestListener);
-
         const port = $.config.getTyped("server.port", 80);
 
         await new Promise<void>((resolve, reject) => {
@@ -190,7 +188,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
         let params: Record<string, string> | undefined;
 
         if (!route) {
-            // Check the routes cache first
+            // Check cache first
             const fromCache = this.routesCache.get(pathname);
             if (fromCache) {
                 route = this.routes.get(fromCache.key)!;
