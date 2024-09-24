@@ -6,7 +6,6 @@
       "@japa/runner",
       "@japa/assert",
       "@japa/api-client",
-      "mnemonist/lru-map",
     ]
   },
   "exclude": [
