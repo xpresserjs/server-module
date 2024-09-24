@@ -83,17 +83,19 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
     /**
      * config - Server Configuration
      */
-    public config: NodeHttpServerProviderConfig = {
-        requestHandler: "xpresser",
-        routesCacheSize: 100_000,
-        notFoundCacheSize: 100_000
-    };
+    public config: NodeHttpServerProviderConfig;
 
-    private readonly useNativeRequestHandler;
+    private readonly useNativeRequestHandler: boolean;
 
     constructor(config: Partial<NodeHttpServerProviderConfig> = {}) {
         super();
-        this.config = { ...this.config, ...config };
+        // Initialize config with default values and override with provided config
+        this.config = {
+            requestHandler: "xpresser",
+            routesCacheSize: 100_000,
+            notFoundCacheSize: 100_000,
+            ...config
+        };
         this.useNativeRequestHandler = this.config.requestHandler === "native";
         this.routesCache = new LRUMap(this.config.routesCacheSize);
         this.notFoundCache = new LRUMap(this.config.notFoundCacheSize);
@@ -103,7 +105,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * init - Initialize Server Provider
      * @param $
      */
-    async init($: Xpresser) {
+    async init($: Xpresser): Promise<void> {
         this.isProduction = $.config.data.env === "production";
     }
 
@@ -117,7 +119,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
 
         this.routes = routerService.toMap();
 
-        const server = createHttpServer(this.requestListener.bind(this));
+        const server = createHttpServer(this.requestListener);
 
         const port = $.config.getTyped("server.port", 80);
 
@@ -155,7 +157,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * @param res
      * @private
      */
-    private handleRoute(route: RouteData, req: IncomingMessage, res: ServerResponse) {
+    private handleRoute(route: RouteData, req: IncomingMessage, res: ServerResponse): void {
         if (this.useNativeRequestHandler) {
             (route.controller as Function)(req, res);
         } else {
@@ -169,26 +171,29 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * @param req
      * @param res
      */
-    private async requestListener(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    private requestListener = (req: IncomingMessage, res: ServerResponse): void => {
         const method = req.method?.toUpperCase() ?? "GET";
         const url = req.url ?? "/";
         const pathname = url.split("?")[0];
 
         const routeKey = `${method} ${pathname}`;
-        let route = this.routes!.get(routeKey);
+        let route = this.routes.get(routeKey);
+        let params: Record<string, string> | undefined;
 
         if (!route) {
+            // Check the routes cache first
             const fromCache = this.routesCache.get(pathname);
             if (fromCache) {
-                route = this.routes!.get(fromCache.key)!;
+                route = this.routes.get(fromCache.key)!;
+                params = fromCache.params;
             } else {
-                // before we try finding route in cache, check if it is in not found cache
+                // If not in cache, check if it's a known not-found route
                 if (this.notFoundCache.has(routeKey)) {
                     return this.sendNotFound(res);
                 }
 
-                // try path-to-regexp
-                for (const [, value] of this.routes!.entries()) {
+                // If not in not-found cache, try path-to-regexp
+                for (const [, value] of this.routes) {
                     if (!value.pathToRegexpFn || !value.pathToRegexp) continue;
 
                     // check if route matches
@@ -207,14 +212,14 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
         }
 
         if (route) {
+            if (params) req.params = params;
             this.handleRoute(route, req, res);
         } else {
             // Add to not found cache
             this.notFoundCache.set(routeKey, 1);
-
             this.sendNotFound(res);
         }
-    }
+    };
 
     /**
      * Send a 404 response
@@ -270,7 +275,7 @@ export default NodeHttpServerProvider;
  */
 export async function useNodeHttpServerProvider(
     $: Xpresser,
-    config: Partial<NodeHttpServerProviderConfig & { defaultModule: true }> = {}
+    config: Partial<NodeHttpServerProviderConfig & { defaultModule: boolean }> = {}
 ) {
     const { defaultModule, ...otherConfigs } = config;
 
@@ -287,4 +292,17 @@ export async function useNodeHttpServerProvider(
     const router = server.getRouter();
 
     return { server, nativeRouter, router };
+}
+
+/**
+ * ==========================================================================
+ * ============================= Type Declarations ==========================
+ * ==========================================================================
+ */
+
+// Add `params` to `IncomingMessage` interface
+declare module "http" {
+    interface IncomingMessage {
+        params: Record<string, string>;
+    }
 }
