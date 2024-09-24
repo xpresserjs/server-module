@@ -81,7 +81,7 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
                 (type === "response"
                     ? res.getHeader(key as string)
                     : req.headers[key as string]) as string,
-            // no param support for pure nodejs
+
             parseParams: () => req.params,
             parseQuery: () => this.parseUrl(req.url || ""),
             parseBody: () => this.parseBody(req)

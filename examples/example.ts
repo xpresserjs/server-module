@@ -1,10 +1,10 @@
-import { init } from "@xpresser/framework/index.js";
+import { __dirname, init } from "@xpresser/framework/index.js";
 import { useNodeHttpServerProvider } from "../servers/NodeHttpServerProvider.js";
 
 const $ = await init({
     name: "example.ts",
     env: "development",
-    paths: { base: __dirname }
+    paths: { base: __dirname(import.meta.url) }
 });
 
 const { router } = await useNodeHttpServerProvider($, {
@@ -12,7 +12,7 @@ const { router } = await useNodeHttpServerProvider($, {
 });
 
 router.get("/", (http) => {
-    http.json({ message: "Hello World!!" });
+    http.send("Hello World!!");
 });
 
 router.get("/user/:user", (http) => {

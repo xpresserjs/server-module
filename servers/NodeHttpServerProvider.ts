@@ -8,7 +8,7 @@ import NodeHttpServerRequestEngine, {
 } from "./NodeHttpServerRequestEngine.js";
 import { RegisterServerModule } from "../index.js";
 import { RouteData } from "../router/RouterRoute.js";
-import { LRUMap } from "mnemonist";
+import { LRUCache } from "lru-cache";
 
 // Pre-defined 404 response to avoid constructing the same response on every request
 const notFoundResponse = Buffer.from("Not Found!");
@@ -72,13 +72,13 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * Routes Cache.
      * Cache for routes to improve performance
      */
-    private routesCache: LRUMap<string, { key: string; params: Record<string, string> } | null>;
+    private routesCache: LRUCache<string, { key: string; params: Record<string, string> }>;
 
     /**
      * Not Found Routes Cache.
      * Cache for not found routes to improve performance
      */
-    private notFoundCache: LRUMap<string, number>;
+    private notFoundCache: LRUCache<string, number>;
 
     /**
      * config - Server Configuration
@@ -97,8 +97,17 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
             ...config
         };
         this.useNativeRequestHandler = this.config.requestHandler === "native";
-        this.routesCache = new LRUMap(this.config.routesCacheSize);
-        this.notFoundCache = new LRUMap(this.config.notFoundCacheSize);
+        this.routesCache = new LRUCache({
+            max: this.config.routesCacheSize,
+            // cache routes for 1 hour
+            ttl: 1000 * 60 * 60
+        });
+
+        this.notFoundCache = new LRUCache({
+            max: this.config.notFoundCacheSize,
+            // cache not found routes for 1 week
+            ttl: 1000 * 60 * 60 * 24 * 7
+        });
     }
 
     /**
