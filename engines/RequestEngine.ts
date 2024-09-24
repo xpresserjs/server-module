@@ -7,6 +7,7 @@ import type { IncomingHttpHeaders, OutgoingHttpHeaders } from "node:http";
 import { ObjectCollection } from "object-collection";
 import { OutgoingHttpHeader } from "http";
 import { RouteData } from "../router/RouterRoute.js";
+import { Xpresser } from "@xpresser/framework";
 
 /**
  * ============================================================
@@ -59,21 +60,7 @@ type GetHeaderFunction = <T extends "request" | "response">(
     : OutgoingHttpHeaders[keyof OutgoingHttpHeaders];
 
 export interface RequestEngineData {
-    // /**
-    //  * Request Query
-    //  */
-    // query: RequestQuery;
-    //
-    // /**
-    //  * Request Body
-    //  */
-    // body: RequestBody;
-    //
-    // /**
-    //  * Request Params
-    //  */
-    // params: Record<string, string>;
-
+    xpresser: () => Xpresser;
     /**
      * Request State
      */
@@ -143,6 +130,9 @@ export interface RequestEngineData {
  */
 
 const defaultData: RequestEngineData = {
+    xpresser: () => {
+        throw new Error("Xpresser instance not set!");
+    },
     state: {},
     respond: () => {},
     setStatusCode: () => {},
@@ -202,6 +192,13 @@ export class RequestEngine {
 
         // Setup Request Engine
         this.data = { ...defaultData, ...data };
+    }
+
+    /**
+     * Use Xpresser
+     */
+    useXpresser(): Xpresser {
+        return this.data.xpresser();
     }
 
     /**

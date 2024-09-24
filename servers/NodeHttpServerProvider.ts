@@ -62,6 +62,9 @@ export interface NodeHttpServerProviderConfig {
  * An example of a custom http server provider for xpresser server module
  */
 class NodeHttpServerProvider extends HttpServerProvider implements HttpServerProviderStructure {
+    static config = {
+        name: "Xpresser/NodeHttpServerProvider"
+    };
     /**
      * Routes
      * @private
@@ -87,8 +90,9 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
 
     private readonly useNativeRequestHandler: boolean;
 
-    constructor(config: Partial<NodeHttpServerProviderConfig> = {}) {
-        super();
+    constructor($: Xpresser, config: Partial<NodeHttpServerProviderConfig> = {}) {
+        super($);
+
         // Initialize config with default values and override with provided config
         this.config = {
             requestHandler: "xpresser",
@@ -159,6 +163,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * handleRoute - Handle Route
      * If `useNativeRequestHandler` is true, it calls the controller with `req` and `res`
      * else it calls the controller with an instance of `NodeHttpServerRequestEngine`
+     * @param $
      * @param route
      * @param req
      * @param res
@@ -168,7 +173,9 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
         if (this.useNativeRequestHandler) {
             (route.controller as Function)(req, res);
         } else {
-            (route.controller as Function)(NodeHttpServerRequestEngine.use(route, req, res));
+            (route.controller as Function)(
+                NodeHttpServerRequestEngine.use(this.$, route, req, res)
+            );
         }
     }
 
@@ -287,7 +294,7 @@ export async function useNodeHttpServerProvider(
     const { defaultModule, ...otherConfigs } = config;
 
     // Initialize Server
-    const server = new NodeHttpServerProvider(otherConfigs);
+    const server = new NodeHttpServerProvider($, otherConfigs);
 
     // Register Server Module
     await RegisterServerModule($, server, defaultModule === true);

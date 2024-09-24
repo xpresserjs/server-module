@@ -2,6 +2,7 @@ import type { Xpresser } from "@xpresser/framework/xpresser.js";
 import XpresserRouter from "./router/index.js";
 import ServerEngine from "./engines/ServerEngine.js";
 import moment from "moment";
+import BaseEngine from "@xpresser/framework/engines/BaseEngine.js";
 
 /**
  * HttpServerProviderStructure - Http Server Provider Structure
@@ -47,7 +48,7 @@ export declare class HttpServerProviderStructure {
  *
  * All custom http server providers should extend this class and implement the `HttpServerProviderStructure`.
  */
-export class HttpServerProvider {
+export class HttpServerProvider extends BaseEngine {
     /**
      * isProduction - Check if server is in production mode.
      * @protected

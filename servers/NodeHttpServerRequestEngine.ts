@@ -3,6 +3,7 @@ import { IncomingMessage, ServerResponse } from "node:http";
 import { parse as parseUrl } from "url";
 import XpresserRouter from "../router/index.js";
 import { RouteData } from "../router/RouterRoute.js";
+import { Xpresser } from "@xpresser/framework";
 
 /**
  * @class NodeHttpServerRequestEngine
@@ -42,17 +43,20 @@ export default class NodeHttpServerRequestEngine extends RequestEngine {
 
     /**
      * @description Creates and initializes a new NodeHttpServerRequestEngine instance for the given request/response pair.
+     * @param $
      * @param {IncomingMessage} req - The Node.js request object
      * @param {ServerResponse} res - The Node.js response object
      * @param route
      */
     static use<T extends typeof NodeHttpServerRequestEngine>(
         this: T,
+        $: Xpresser,
         route: RouteData,
         req: IncomingMessage,
         res: ServerResponse
     ) {
         const rq = new this(route, {
+            xpresser: () => $,
             state: {},
 
             respond: (data) => {
