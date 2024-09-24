@@ -7,9 +7,9 @@ const { server, router, nativeRouter } = await useNodeHttpServerProvider($, {
 });
 
 const handler = server.config.requestHandler;
-$.console.logInfo(`Using [${handler}] Request Handler`);
+$.console.logInfo(`Using [${handler.toUpperCase()}] Request Handler`);
 
-if (server.config.requestHandler === "native") {
+if (server.useNativeRequestHandler) {
     nativeRouter.get("/", (_req, res) => {
         respond(res, "1");
     });

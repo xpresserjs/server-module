@@ -88,7 +88,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      */
     public config: NodeHttpServerProviderConfig;
 
-    private readonly useNativeRequestHandler: boolean;
+    readonly useNativeRequestHandler: boolean;
 
     constructor($: Xpresser, config: Partial<NodeHttpServerProviderConfig> = {}) {
         super($);
@@ -100,6 +100,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
             notFoundCacheSize: 100_000,
             ...config
         };
+
         this.useNativeRequestHandler = this.config.requestHandler === "native";
         this.routesCache = new LRUCache({
             max: this.config.routesCacheSize,
