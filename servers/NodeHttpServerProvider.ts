@@ -172,11 +172,62 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      */
     private handleRoute(route: RouteData, req: IncomingMessage, res: ServerResponse): void {
         if (this.useNativeRequestHandler) {
-            (route.controller as Function)(req, res);
+            this.handleNativeRequest(route, req, res);
         } else {
-            (route.controller as Function)(
-                NodeHttpServerRequestEngine.use(this.$, route, req, res)
-            );
+            this.handleXpresserRequest(route, req, res);
+        }
+    }
+
+    /**
+     * Calls the controller with `req` and `res`
+     * @param route
+     * @param req
+     * @param res
+     * @private
+     */
+    private handleNativeRequest(route: RouteData, req: IncomingMessage, res: ServerResponse): void {
+        try {
+            (route.controller as Function)(req, res);
+        } catch (err) {
+            console.error("Error handling native request:", err);
+            res.writeHead(500, { "Content-Type": "text/plain" });
+            res.end("Internal Server Error");
+        }
+    }
+
+    /**
+     * Calls the controller with an instance of `NodeHttpServerRequestEngine`
+     * @param route
+     * @param req
+     * @param res
+     * @private
+     */
+    private handleXpresserRequest(
+        route: RouteData,
+        req: IncomingMessage,
+        res: ServerResponse
+    ): void {
+        const http = NodeHttpServerRequestEngine.use(this.$, route, req, res);
+        const handler = route.controller as Function;
+
+        if (route.controllerIsAsync) {
+            handler(http)
+                .then((result: any | void) => {
+                    // if result and request is not ended
+                    if (result && !res.writableEnded) http.send(result);
+                })
+                .catch((err: Error) => {
+                    console.error("Error handling Xpresser request:", err);
+                    http.useXpresser().console.logError(err);
+                });
+        } else {
+            try {
+                const result = handler(http);
+                if (result && !res.writableEnded) http.send(result);
+            } catch (err) {
+                console.error("Error handling Xpresser request:", err);
+                http.useXpresser().console.logError(err);
+            }
         }
     }
 

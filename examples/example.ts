@@ -9,9 +9,7 @@ const $ = await init({
 
 const { router } = await useNodeHttpServerProvider($);
 
-router.get("/", (http) => {
-    http.send("Hello World!!");
-});
+router.get("/", () => "Hello World!!");
 
 router.get("/user/:user", (http) => {
     http.json({

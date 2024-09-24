@@ -5,6 +5,7 @@ export interface RouteData {
     method: string;
     path: StringOrRegExp;
     controller?: RouteHandlerFunction<Function>;
+    controllerIsAsync?: boolean;
     name?: string;
     params?: string[];
     pathToRegexp?: RegExp;
@@ -26,7 +27,8 @@ class RouterRoute {
         this.data = {
             method,
             path,
-            controller
+            controller,
+            controllerIsAsync: false
         };
 
         if (typeof path === "string") {
@@ -47,6 +49,10 @@ class RouterRoute {
         if (typeof controller === "object") {
             // set name
             this.data.controller = controller.name;
+
+            if (controller.constructor.name === "AsyncFunction") {
+                this.data.controllerIsAsync = true;
+            }
         }
 
         this.namespace = namespace;
