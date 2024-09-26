@@ -1,9 +1,7 @@
 import type { Xpresser } from "@xpresser/framework/xpresser.js";
 import "../index.js";
 import { test } from "@japa/runner";
-import NodeHttpServerProvider, {
-    useNodeHttpServerProvider
-} from "../servers/NodeHttpServerProvider.js";
+import NodeHttpServerProvider from "../servers/NodeHttpServerProvider.js";
 import { respond, SetupXpresser, TearDownXpresser } from "./src/functions.js";
 import { RouterReqHandlerFunction } from "../servers/NodeHttpServerRequestEngine.js";
 
@@ -15,7 +13,7 @@ test.group("Node Server Module", (group) => {
     group.setup(async () => {
         $ = await SetupXpresser();
 
-        const http = await useNodeHttpServerProvider($, {
+        const http = await NodeHttpServerProvider.use($, {
             requestHandler: "native",
             defaultModule: true
         });
@@ -67,7 +65,7 @@ test.group("Node Server Module With Xpresser Engine", (group) => {
 
     group.setup(async () => {
         $ = await SetupXpresser();
-        const http = await useNodeHttpServerProvider($, {
+        const http = await NodeHttpServerProvider.use($, {
             defaultModule: true
         });
 

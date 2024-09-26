@@ -237,6 +237,38 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
     }
 
     /**
+     *  Use Node Http Server Provider
+     * @param $
+     * @param config
+     * @example
+     * const { router } = await NodeHttpServerProvider.use($);
+     *
+     * router.get("/", (http) => {
+     *     http.json({ message: "Hello World!!" });
+     * });
+     */
+    static async use(
+        $: Xpresser,
+        config: Partial<NodeHttpServerProviderConfig & { defaultModule: boolean }> = {}
+    ) {
+        const { defaultModule, ...otherConfigs } = config;
+
+        // Initialize Server
+        const server = new NodeHttpServerProvider($, otherConfigs);
+
+        // Register Server Module
+        await RegisterServerModule($, server, defaultModule === true);
+
+        // Return raw router that makes use of the default request engine
+        const nativeRouter = server.getNativeRouter();
+
+        // Return router type that makes use of the xpresser request handler
+        const router = server.getRouter();
+
+        return { server, nativeRouter, router };
+    }
+
+    /**
      * Get Router - Returns Xpresser Router
      * @example
      * const router = server.getRouter();
@@ -304,38 +336,6 @@ export interface NodeHttpServerProviderConfig {
      * `LRUMap` is used to cache not found routes
      */
     notFoundCacheSize: number;
-}
-
-/**
- * useNodeHttpServerProvider - Use Node Http Server Provider
- * @param $
- * @param config
- * @example
- * const { router } = await useNodeHttpServerProvider($);
- *
- * router.get("/", (http) => {
- *     http.json({ message: "Hello World!!" });
- * });
- */
-export async function useNodeHttpServerProvider(
-    $: Xpresser,
-    config: Partial<NodeHttpServerProviderConfig & { defaultModule: boolean }> = {}
-) {
-    const { defaultModule, ...otherConfigs } = config;
-
-    // Initialize Server
-    const server = new NodeHttpServerProvider($, otherConfigs);
-
-    // Register Server Module
-    await RegisterServerModule($, server, defaultModule === true);
-
-    // Return raw router that makes use of the default request engine
-    const nativeRouter = server.getNativeRouter();
-
-    // Return router type that makes use of the xpresser request handler
-    const router = server.getRouter();
-
-    return { server, nativeRouter, router };
 }
 
 /**

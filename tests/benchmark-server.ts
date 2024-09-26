@@ -1,8 +1,8 @@
 import { respond, SetupXpresser } from "./src/functions.js";
-import { useNodeHttpServerProvider } from "../servers/NodeHttpServerProvider.js";
+import NodeHttpServerProvider from "../servers/NodeHttpServerProvider.js";
 
 const $ = await SetupXpresser();
-const { server, router, nativeRouter } = await useNodeHttpServerProvider($, {
+const { server, router, nativeRouter } = await NodeHttpServerProvider.use($, {
     defaultModule: true
 });
 

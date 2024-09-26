@@ -1,5 +1,5 @@
 import { __dirname, init } from "@xpresser/framework/index.js";
-import { useNodeHttpServerProvider } from "../servers/NodeHttpServerProvider.js";
+import NodeHttpServerProvider from "../servers/NodeHttpServerProvider.js";
 
 const $ = await init({
     name: "example.ts",
@@ -7,7 +7,7 @@ const $ = await init({
     paths: { base: __dirname(import.meta.url) }
 });
 
-const { router } = await useNodeHttpServerProvider($);
+const { router } = await NodeHttpServerProvider.use($);
 
 router.get("/", () => "Hello World!!");
 

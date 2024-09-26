@@ -1,12 +1,12 @@
 import { test } from "@japa/runner";
 import { SetupXpresser, TearDownXpresser } from "./src/functions.js";
 import { NamedFunc } from "@xpresser/framework/functions/utils.js";
-import { useNodeHttpServerProvider } from "../servers/NodeHttpServerProvider.js";
 import RouterService from "../router/RouterService.js";
 import type Router from "../router/index.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { RouteData } from "../router/RouterRoute.js";
 import type { Xpresser } from "@xpresser/framework";
+import NodeHttpServerProvider from "../servers/NodeHttpServerProvider.js";
 
 /**
  * Make Handler
@@ -42,7 +42,7 @@ test.group("RouterService", (group) => {
 
     group.setup(async () => {
         $ = await SetupXpresser();
-        const { nativeRouter } = await useNodeHttpServerProvider($, { defaultModule: true });
+        const { nativeRouter } = await NodeHttpServerProvider.use($, { defaultModule: true });
 
         // set globals
         router = nativeRouter;
