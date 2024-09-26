@@ -90,6 +90,14 @@ class ServerModule extends BaseModule implements BaseModule {
             })
         );
 
+        // Run stopServer boot cycle on `$.stop()`
+        this.$.on.stop(
+            BootCycleFunction(ServerModule.prependName("StopServer"), async (next) => {
+                await this.$.runBootCycle("stopServer");
+                return next();
+            })
+        );
+
         // Mark as initialized.
         this.initialized = true;
     }
