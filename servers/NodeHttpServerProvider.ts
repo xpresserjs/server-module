@@ -20,44 +20,6 @@ const notFoundResponse = Buffer.from("Not Found!");
 export type ReqHandlerFunction = (req: IncomingMessage, res: ServerResponse) => void;
 
 /**
- * Provider Configuration
- */
-export interface NodeHttpServerProviderConfig {
-    /**
-     * Request Handler
-     * - `native` uses the native request handler
-     * - `xpresser` uses the xpresser request handler
-     *
-     * @default "xpresser"
-     * @example
-     * // If requestHandler is set to `native`
-     * router.get("/", (req, res) => {
-     *     res.end(`Your url is ${req.url}`);
-     * })
-     *
-     * // If requestHandler is set to `xpresser`
-     * router.get("/", (http) => {
-     *     http.send(`Your url is ${http.req.url}`);
-     * })
-     */
-    requestHandler: "native" | "xpresser";
-
-    /**
-     * Routes Cache Size
-     * Number of routes to cache to improve performance.
-     * `LRUMap` is used to cache routes
-     */
-    routesCacheSize: number;
-
-    /**
-     * Not Found Cache Size
-     * Number of not found routes to cache to improve performance.
-     * `LRUMap` is used to cache not found routes
-     */
-    notFoundCacheSize: number;
-}
-
-/**
  * NodeHttpServerProvider - Node Http Server Provider
  * An example of a custom http server provider for xpresser server module
  */
@@ -117,21 +79,20 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
 
     /**
      * init - Initialize Server Provider
-     * @param $
      */
-    async init($: Xpresser): Promise<void> {
-        this.isProduction = $.config.data.env === "production";
+    async init(): Promise<void> {
+        this.isProduction = this.$.config.data.env === "production";
     }
 
     /**
      * boot - Boot Server Provider
-     * @param $
      */
-    async boot($: Xpresser): Promise<void> {
+    async boot(): Promise<void> {
         const router = this.getRouter();
         const routerService = RouterService.use(router);
         this.routes = routerService.toMap();
 
+        const $ = this.$;
         const server = createHttpServer(this.requestListener);
         const port = $.config.getTyped("server.port", 80);
 
@@ -164,7 +125,6 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
      * handleRoute - Handle Route
      * If `useNativeRequestHandler` is true, it calls the controller with `req` and `res`
      * else it calls the controller with an instance of `NodeHttpServerRequestEngine`
-     * @param $
      * @param route
      * @param req
      * @param res
@@ -208,27 +168,7 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
         res: ServerResponse
     ): void {
         const http = NodeHttpServerRequestEngine.use(this.$, route, req, res);
-        const handler = route.controller as Function;
-
-        if (route.controllerIsAsync) {
-            handler(http)
-                .then((result: any | void) => {
-                    // if result and request is not ended
-                    if (result && !res.writableEnded) http.send(result);
-                })
-                .catch((err: Error) => {
-                    console.error("Error handling Xpresser request:", err);
-                    http.useXpresser().console.logError(err);
-                });
-        } else {
-            try {
-                const result = handler(http);
-                if (result && !res.writableEnded) http.send(result);
-            } catch (err) {
-                console.error("Error handling Xpresser request:", err);
-                http.useXpresser().console.logError(err);
-            }
-        }
+        this.handleRequest(route, http);
     }
 
     /**
@@ -327,6 +267,44 @@ class NodeHttpServerProvider extends HttpServerProvider implements HttpServerPro
 }
 
 export default NodeHttpServerProvider;
+
+/**
+ * Provider Configuration
+ */
+export interface NodeHttpServerProviderConfig {
+    /**
+     * Request Handler
+     * - `native` uses the native request handler
+     * - `xpresser` uses the xpresser request handler
+     *
+     * @default "xpresser"
+     * @example
+     * // If requestHandler is set to `native`
+     * router.get("/", (req, res) => {
+     *     res.end(`Your url is ${req.url}`);
+     * })
+     *
+     * // If requestHandler is set to `xpresser`
+     * router.get("/", (http) => {
+     *     http.send(`Your url is ${http.req.url}`);
+     * })
+     */
+    requestHandler: "native" | "xpresser";
+
+    /**
+     * Routes Cache Size
+     * Number of routes to cache to improve performance.
+     * `LRUMap` is used to cache routes
+     */
+    routesCacheSize: number;
+
+    /**
+     * Not Found Cache Size
+     * Number of not found routes to cache to improve performance.
+     * `LRUMap` is used to cache not found routes
+     */
+    notFoundCacheSize: number;
+}
 
 /**
  * useNodeHttpServerProvider - Use Node Http Server Provider

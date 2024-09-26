@@ -122,6 +122,11 @@ export interface RequestEngineData {
      * else respond method will be used
      */
     respondJson?: (data: JsonValue) => void;
+
+    /**
+     * This function should return true if request has been sent.
+     */
+    responded?: () => boolean;
 }
 
 /**
@@ -388,6 +393,18 @@ export class RequestEngine {
         const $ = this.useXpresser();
 
         return $.engine(ServerEngine).url($path, $query);
+    }
+
+    /**
+     * Responded
+     */
+
+    responded() {
+        if (this.data.responded) {
+            return this.data.responded();
+        }
+
+        return false;
     }
 
     /**

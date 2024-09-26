@@ -149,7 +149,7 @@ class ServerModule extends BaseModule implements BaseModule {
         // get provider
         const provider = this.httpProvider;
         // initialize provider
-        await provider.init(this.$);
+        await provider.init();
 
         // Run serverInit boot cycle
         await this.$.runBootCycle("serverInit");
@@ -158,7 +158,7 @@ class ServerModule extends BaseModule implements BaseModule {
         await this.$.runBootCycle("bootServer");
 
         // boot server
-        await provider.boot(this.$);
+        await provider.boot();
 
         // Run serverBooted boot cycle
         await this.$.runBootCycle("serverBooted");

@@ -3,6 +3,8 @@ import XpresserRouter from "./router/index.js";
 import ServerEngine from "./engines/ServerEngine.js";
 import moment from "moment";
 import BaseEngine from "@xpresser/framework/engines/BaseEngine.js";
+import { RouteData } from "./router/RouterRoute.js";
+import { RequestEngine } from "./engines/RequestEngine.js";
 
 /**
  * HttpServerProviderStructure - Http Server Provider Structure
@@ -11,7 +13,7 @@ import BaseEngine from "@xpresser/framework/engines/BaseEngine.js";
  *  When creating variables or functions that should expect a custom http server provider,
  *  this structure should be used.
  */
-export declare class HttpServerProviderStructure {
+export declare class HttpServerProviderStructure extends BaseEngine {
     /**
      * init - Initialize Server Provider
      * All initialization should be done here but no server should be started here.
@@ -20,18 +22,16 @@ export declare class HttpServerProviderStructure {
      * This function is called when the server provider is being initialized.
      * This happens at the `boot` xpresser life cycle, before the `serverInit` cycle.
      *
-     * @param $ Xpresser
      */
-    public init($: Xpresser): Promise<void>;
+    public init(): Promise<void>;
 
     /**
      * boot - Boot Server Provider
      * This is where the server should be started.
      * This function is called when the server provider is being booted.
      * This happens after the `bootServer` cycle, before the `serverBooted` cycle.
-     * @param $ Xpresser
      */
-    public boot($: Xpresser): Promise<void>;
+    public boot(): Promise<void>;
 
     /**
      * customBootCycles - Custom Boot Cycles required by this Provider.
@@ -75,6 +75,32 @@ export class HttpServerProvider extends BaseEngine {
      */
     getRouter<Router extends XpresserRouter>(): Router {
         return this.router as Router;
+    }
+
+    /**
+     * Handle Request
+     */
+    handleRequest<T extends RequestEngine>(route: RouteData, http: T) {
+        const handler = route.controller as Function;
+        if (route.controllerIsAsync) {
+            handler(http)
+                .then((result: any | void) => {
+                    // if result and request is not ended
+                    if (result && !http.responded()) http.send(result);
+                })
+                .catch((err: Error) => {
+                    console.error("Error handling Xpresser request:", err);
+                    http.useXpresser().console.logError(err);
+                });
+        } else {
+            try {
+                const result = handler(http);
+                if (result && !http.responded()) http.send(result);
+            } catch (err) {
+                console.error("Error handling Xpresser request:", err);
+                http.useXpresser().console.logError(err);
+            }
+        }
     }
 }
 
