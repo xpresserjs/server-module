@@ -3,7 +3,7 @@ import "../index.js";
 import { test } from "@japa/runner";
 import NodeHttpServerProvider from "../servers/NodeHttpServerProvider.js";
 import { respond, SetupXpresser, TearDownXpresser } from "./src/functions.js";
-import { RouterReqHandlerFunction } from "../servers/NodeHttpServerRequestEngine.js";
+import { type RouterReqHandlerFunction } from "../servers/NodeHttpServerRequestEngine.js";
 
 const API_TIMEOUT = 5000;
 test.group("Node Server Module", (group) => {

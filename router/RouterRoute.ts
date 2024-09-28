@@ -1,5 +1,5 @@
 import type { RouteHandlerFunction, StringOrRegExp } from "./types.js";
-import { match, MatchFunction, pathToRegexp } from "path-to-regexp";
+import { match, type MatchFunction, pathToRegexp } from "path-to-regexp";
 
 export interface RouteData {
     method: string;

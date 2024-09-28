@@ -2,7 +2,7 @@ import { RequestEngine } from "../engines/RequestEngine.js";
 import { IncomingMessage, ServerResponse } from "node:http";
 import { parse as parseUrl } from "url";
 import XpresserRouter from "../router/index.js";
-import { RouteData } from "../router/RouterRoute.js";
+import { type RouteData } from "../router/RouterRoute.js";
 import { Xpresser } from "@xpresser/framework";
 
 /**

@@ -5,8 +5,8 @@
  */
 import type { IncomingHttpHeaders, OutgoingHttpHeaders } from "node:http";
 import { ObjectCollection } from "object-collection";
-import { OutgoingHttpHeader } from "http";
-import { RouteData } from "../router/RouterRoute.js";
+import type { OutgoingHttpHeader } from "http";
+import type { RouteData } from "../router/RouterRoute.js";
 import { Xpresser } from "@xpresser/framework";
 import ServerEngine from "./ServerEngine.js";
 

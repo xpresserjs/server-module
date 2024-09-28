@@ -5,41 +5,6 @@ import { type BootCycle, BootCycleFunction } from "@xpresser/framework/engines/B
 import type { Xpresser } from "@xpresser/framework/xpresser.js";
 import type { ServerConfig } from "./types/index.js";
 import type { HttpServerProviderStructure } from "./provider.js";
-
-/**
- * Add BootCycle types
- */
-
-declare module "@xpresser/framework/engines/BootCycleEngine.js" {
-    module BootCycle {
-        enum Cycles {
-            serverInit = "serverInit",
-            bootServer = "bootServer",
-            serverBooted = "serverBooted",
-            stopServer = "stopServer"
-        }
-    }
-}
-
-/**
- * Add Modules Related Types
- */
-declare module "@xpresser/framework/modules/BaseModule.js" {
-    module Modules {
-        enum Available {
-            server = "ServerModule"
-        }
-    }
-}
-
-declare module "@xpresser/framework/types/configs.js" {
-    module Config {
-        interface Main {
-            server: Partial<ServerConfig.Main>;
-        }
-    }
-}
-
 /**
  * Server Module
  * key: server

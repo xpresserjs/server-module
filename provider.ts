@@ -3,7 +3,7 @@ import XpresserRouter from "./router/index.js";
 import ServerEngine from "./engines/ServerEngine.js";
 import moment from "moment";
 import BaseEngine from "@xpresser/framework/engines/BaseEngine.js";
-import { RouteData } from "./router/RouterRoute.js";
+import type { RouteData } from "./router/RouterRoute.js";
 import { RequestEngine } from "./engines/RequestEngine.js";
 
 /**

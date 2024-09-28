@@ -6,6 +6,7 @@
       "@japa/runner",
       "@japa/assert",
       "@japa/api-client",
+      "./xpresser.d.ts"
     ]
   },
   "exclude": [

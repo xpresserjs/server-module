@@ -4,10 +4,10 @@ import XpresserRouter from "../router/index.js";
 import { IncomingMessage, ServerResponse, createServer as createHttpServer } from "node:http";
 import RouterService from "../router/RouterService.js";
 import NodeHttpServerRequestEngine, {
-    RouterReqHandlerFunction
+    type RouterReqHandlerFunction
 } from "./NodeHttpServerRequestEngine.js";
 import { RegisterServerModule } from "../index.js";
-import { RouteData } from "../router/RouterRoute.js";
+import type { RouteData } from "../router/RouterRoute.js";
 import { LRUCache } from "lru-cache";
 
 // Pre-defined 404 response to avoid constructing the same response on every request
