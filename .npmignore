@@ -9,3 +9,8 @@ node_modules
 # TS
 *.ts
 !*.d.ts
+
+bash/benchmarks
+bin
+tests
+*.sh

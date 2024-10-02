@@ -5,40 +5,6 @@ import { type BootCycle, BootCycleFunction } from "@xpresser/framework/engines/B
 import type { Xpresser } from "@xpresser/framework/xpresser.js";
 import type { ServerConfig } from "./types/index.js";
 import type { HttpServerProviderStructure } from "./provider.js";
-
-/**
- * Add BootCycle types
- */
-
-declare module "@xpresser/framework/engines/BootCycleEngine.js" {
-    module BootCycle {
-        enum Cycles {
-            serverInit = "serverInit",
-            bootServer = "bootServer",
-            serverBooted = "serverBooted"
-        }
-    }
-}
-
-/**
- * Add Modules Related Types
- */
-declare module "@xpresser/framework/modules/BaseModule.js" {
-    module Modules {
-        enum Available {
-            server = "ServerModule"
-        }
-    }
-}
-
-declare module "@xpresser/framework/types/configs.js" {
-    module Config {
-        interface Main {
-            server: Partial<ServerConfig.Main>;
-        }
-    }
-}
-
 /**
  * Server Module
  * key: server
@@ -57,7 +23,7 @@ class ServerModule extends BaseModule implements BaseModule {
      * Custom Boot Cycles required by this module.
      */
     static customBootCycles(): string[] {
-        return ["serverInit", "bootServer", "serverBooted"];
+        return ["serverInit", "bootServer", "serverBooted", "stopServer"];
     }
 
     /**
@@ -85,6 +51,14 @@ class ServerModule extends BaseModule implements BaseModule {
                 // Log Server Start
                 await this.#serverStartLog();
                 await this.#boot();
+                return next();
+            })
+        );
+
+        // Run stopServer boot cycle on `$.stop()`
+        this.$.on.stop(
+            BootCycleFunction(ServerModule.prependName("StopServer"), async (next) => {
+                await this.$.runBootCycle("stopServer");
                 return next();
             })
         );
@@ -148,7 +122,7 @@ class ServerModule extends BaseModule implements BaseModule {
         // get provider
         const provider = this.httpProvider;
         // initialize provider
-        await provider.init(this.$);
+        await provider.init();
 
         // Run serverInit boot cycle
         await this.$.runBootCycle("serverInit");
@@ -157,7 +131,7 @@ class ServerModule extends BaseModule implements BaseModule {
         await this.$.runBootCycle("bootServer");
 
         // boot server
-        await provider.boot(this.$);
+        await provider.boot();
 
         // Run serverBooted boot cycle
         await this.$.runBootCycle("serverBooted");
@@ -191,12 +165,17 @@ class ServerModule extends BaseModule implements BaseModule {
  * This function is called by the provider
  * @param $
  * @param provider
+ * @param asDefault
  * @example
  *
  * const provider = new HttpServerProvider();
  * await RegisterServerModule($, provider);
  */
-export async function RegisterServerModule($: Xpresser, provider: HttpServerProviderStructure) {
+export async function RegisterServerModule(
+    $: Xpresser,
+    provider: HttpServerProviderStructure,
+    asDefault = false
+) {
     let customCycles: string[] = [];
 
     // check if provider has custom boot cycles
@@ -209,6 +188,12 @@ export async function RegisterServerModule($: Xpresser, provider: HttpServerProv
         // add provider custom boot cycles
         addBootCycles: customCycles as BootCycle.Cycles[]
     });
+
+    // if asDefault is true
+    if (asDefault) {
+        // set as default module
+        $.modules.setDefault("server");
+    }
 
     /**
      * Set Server Module Provider
@@ -227,6 +212,14 @@ export async function RegisterServerModule($: Xpresser, provider: HttpServerProv
             next();
         })
     );
+}
+
+/**
+ * Register Server Module as default module
+ * Note: this will set server module as default module
+ */
+export function RegisterServerModuleAsDefault($: Xpresser, provider: HttpServerProviderStructure) {
+    return RegisterServerModule($, provider, true);
 }
 
 export default ServerModule;
